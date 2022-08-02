@@ -6,15 +6,15 @@ import { AuthDto } from './dtos/auth.dto';
 export class AuthController {
     constructor(private authService: AuthService) {}
 
-    @Post('signin')
-    async signInLocal(@Body() authDto: AuthDto) {
+    @Post('signincustomer')
+    async signInCustomer(@Body() authDto: AuthDto) {
 
-        return this.authService.signInLocal(authDto);
+        return this.authService.signInCustomer(authDto);
     }
 
-    @Post('register')
-    async registerNewUser(@Body() authDto: AuthDto): Promise<AuthDto> {
+    @Post('signincorporate')
+    async signInCorporate(@Body() authDto: AuthDto) {
 
-        return this.authService.registerNewUser(authDto);
+        return this.authService.signInCorporate(authDto);
     }
 }

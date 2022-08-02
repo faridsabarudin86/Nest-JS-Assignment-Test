@@ -4,4 +4,6 @@ export class AuthDto {
     password: string;
     fullName?: string;
     userType?: string;
+    corporate_uuid: string;
+    corporateBranch_uuid: string;
 }

@@ -4,11 +4,11 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { CustomerModule } from './customer/customer.module';
-import { DealershipModule } from './dealership/dealership.module';
+import { CorporateModule } from './corporate/corporate.module';
 import config from 'src/config/defaults';
 
 @Module({
-  imports: [MongooseModule.forRoot(config.mongoURI), AuthModule, CustomerModule, DealershipModule],
+  imports: [MongooseModule.forRoot(config.mongoURI), AuthModule, CustomerModule, CorporateModule],
   controllers: [AppController],
   providers: [AppService],
 })

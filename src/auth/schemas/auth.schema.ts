@@ -6,4 +6,6 @@ export const AuthSchema = new mongoose.Schema ({
     password: String,
     fullName: String,
     userType: String,
+    corporate_uuid: String,
+    corporateBranch_uuid: String,
 })

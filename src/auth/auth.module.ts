@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
-import { JwtModule } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { AuthSchema } from './schemas/auth.schema';
 import config from 'src/config/defaults';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [MongooseModule.forFeature([
@@ -13,7 +14,10 @@ import config from 'src/config/defaults';
 
   JwtModule.register({
     secret: config.jwtSecretKey,
-  })
+  }),
+
+  JwtStrategy,
+  JwtService,
 ],
   controllers: [AuthController],
   providers: [AuthService],
