@@ -3,13 +3,13 @@ import { JwtModule, JwtService } from '@nestjs/jwt';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { AuthSchema } from './schemas/auth.schema';
+import { UserSchema } from './schemas/user.schema';
 import config from 'src/config/defaults';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [MongooseModule.forFeature([
-    {name: 'User', schema: AuthSchema}
+    {name: 'User', schema: UserSchema}
   ]),
 
   JwtModule.register({

@@ -1,11 +1,11 @@
 export class CustomerVehicleDto {
     uuid?: string;
-    owner_uuid?: string;
-    alternateDrivers_uuid?: string[];
-    vehicleBrand?: string;
-    vehicleModel?: string;
-    vehicleType?: string;
-    vehiclePlateNumber?: string;
-    vehicleChassisNumber?: string;
-    vehicleColour?: string;
+    ownerUuid?: string;
+    alternateDriverUuid?: string[];
+    brand?: string;
+    model?: string;
+    type?: string;
+    plateNumber?: string;
+    chassisNumber?: string;
+    colour?: string;
 }

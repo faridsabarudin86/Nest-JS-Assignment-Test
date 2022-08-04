@@ -1,6 +1,6 @@
 export class CorporateBranchesDto {
-    uuid: string;
-    corporate_uuid: string;
-    branchName: string;
-    branchAddress: string;
+    uuid?: string;
+    corporateUuid?: string;
+    name?: string;
+    address?: string;
 }

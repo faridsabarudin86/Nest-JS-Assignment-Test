@@ -1,30 +1,31 @@
 import { Body, Controller, Post, Request, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { AuthDto } from 'src/auth/dtos/auth.dto';
 import { CustomerService } from './customer.service';
-import { AlternateDriverDto } from './dtos/alternate-driver.dto';
-import { CustomerVehicleDto } from './dtos/customer-vehicle.dto';
+import { AddAlternateDriverDto } from './dtos/addAlternateDrivers.dto';
+import { AddVehicleDto } from './dtos/addVehicle.dto';
+import { RegisterNewCustomerDto } from './dtos/registerNewCustomer.dto';
 
 @Controller('customer')
 export class CustomerController {
     constructor(private customerService: CustomerService) {}
 
     @Post('register')
-    async registerNewCustomer(@Body() authDto: AuthDto): Promise<AuthDto> {
+    async registerNewCustomer(@Body() registerNewCustomerDto: RegisterNewCustomerDto) {
 
-        return this.customerService.registerNewCustomer(authDto);
+        return this.customerService.registerNewCustomer(registerNewCustomerDto);
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @Post('addVehicle')
-    async addNewVehicle(@Body() customerVehicleDto: CustomerVehicleDto, @Request() request: any): Promise<CustomerVehicleDto> {
+    @Post('addvehicle')
+    async addNewVehicle(@Body() addVehicleDto: AddVehicleDto, @Request() request: any) {
 
-        return this.customerService.addVehicle(customerVehicleDto, request.user);
+        return this.customerService.addVehicle(addVehicleDto, request.user);
     }
 
     @UseGuards(AuthGuard('jwt'))
-    @Post('addAlternateDriver')
-    async addNewAlternateDrivers(@Body() alternateDriverDto: AlternateDriverDto, @Body() customerVehicleDto: CustomerVehicleDto, @Request() request: any): Promise<CustomerVehicleDto> {
-        return this.customerService.addAlternateDrivers(alternateDriverDto, customerVehicleDto, request.user);
+    @Post('addalternatedriver')
+    async addNewAlternateDrivers(@Body() addAlternateDriverDto: AddAlternateDriverDto, @Request() request: any) {
+        
+        return this.customerService.addAlternateDrivers(addAlternateDriverDto, request.user);
     }
 }
