@@ -12,7 +12,7 @@ export class AuthService {
         private jwtService: JwtService,
         @InjectModel('User') private readonly userModel: Model<UserDto>) {}
 
-    async signInCustomer(signInCustomerDto: SignInCustomerDto) {
+    async signInCustomer(signInCustomerDto: SignInCustomerDto): Promise<any> {
 
         const findUser = await this.userModel.findOne({emailAddress: signInCustomerDto.emailAddress});
         if (!findUser) throw new UnauthorizedException('User does not exists.');
@@ -22,7 +22,7 @@ export class AuthService {
         return this.userSignedInCustomer(findUser.uuid, findUser.emailAddress, findUser.userType, findUser.fullName);
     }
 
-    async signInCorporate(signInCorporateDto: SignInCorporateDto) {
+    async signInCorporate(signInCorporateDto: SignInCorporateDto): Promise<any> {
 
         const findUser = await this.userModel.findOne({emailAddress: signInCorporateDto.emailAddress, corporateUuid: signInCorporateDto.corporateUuid});
         if (!findUser) throw new UnauthorizedException('User does not exists.');

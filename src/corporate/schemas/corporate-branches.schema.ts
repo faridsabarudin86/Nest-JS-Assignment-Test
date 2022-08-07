@@ -5,4 +5,9 @@ export const CorporateBranchesSchema = new mongoose.Schema ({
     corporateUuid: String,
     name: String,
     address: String,
+    workingHours: {
+        startWorkingHours: Number,
+        endWorkingHours: Number,
+        dayOff: [String],
+    }
 })

@@ -15,7 +15,7 @@ export class CorporateService {
         @InjectModel('User') private readonly userModel: Model<UserDto>,
         ) {}
 
-        async createNewCorporate(corporateDto: CorporateDto) {
+        async createNewCorporate(corporateDto: CorporateDto): Promise<any> {
             
             corporateDto.uuid = uuid();
             
@@ -24,7 +24,7 @@ export class CorporateService {
             return await newCorporate.save();
         }
 
-        async createNewCorporateBranch(corporateBranchesDto: CorporateBranchesDto, response: any) {
+        async createNewCorporateBranch(corporateBranchesDto: CorporateBranchesDto, response: any): Promise<any> {
             
             const checkUser = await this.userModel.findOne({ uuid: response.userId, userType: UserRoles.superAdmin, corporateUuid: response.userCorporateUuid });
 
@@ -38,7 +38,7 @@ export class CorporateService {
             return await newBranch.save();
         }
 
-        async createNewCorporateSuperUser(userDto: UserDto) {
+        async createNewCorporateSuperUser(userDto: UserDto): Promise<any> {
 
             if(userDto.corporateUuid === "" || null) throw new BadRequestException('Corporate uuid cannot be left empty');
 
@@ -50,7 +50,7 @@ export class CorporateService {
             return await newUser.save();
         }
 
-        async createNewCorporateUser(userDto: UserDto) {
+        async createNewCorporateUser(userDto: UserDto): Promise<any> {
 
             userDto.uuid = uuid();
 
@@ -72,5 +72,20 @@ export class CorporateService {
             const newUser = new this.userModel(userDto);
 
             return await newUser.save();
+        }
+
+        async editOffDays(corporateBranchesDto: CorporateBranchesDto): Promise<any> {
+
+            return null;
+        }
+
+        async editStartingWorkingHours(corporateBranchesDto: CorporateBranchesDto): Promise<any> {
+
+            return null;
+        }
+
+        async editEndWorkingHours(corporateBranchesDto: CorporateBranchesDto): Promise<any> {
+
+            return null;
         }
 }

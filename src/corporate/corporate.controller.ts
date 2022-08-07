@@ -12,27 +12,27 @@ export class CorporateController {
 
     @UseGuards(AuthGuard('jwt'))
     @Post('createnewcorporate')
-    async createNewCorporate(@Body() corporateDto: CorporateDto) {
+    async createNewCorporate(@Body() corporateDto: CorporateDto): Promise<any> {
 
         return this.corporateService.createNewCorporate(corporateDto);
     }
 
     @UseGuards(AuthGuard('jwt'))
     @Post('createnewcorporatebranch')
-    async createNewCorporateBranch(@Body() corporateBranchesDto: CorporateBranchesDto, @Request() request: any) {
+    async createNewCorporateBranch(@Body() corporateBranchesDto: CorporateBranchesDto, @Request() request: any): Promise<any> {
 
         return this.corporateService.createNewCorporateBranch(corporateBranchesDto, request.user);
     }
 
     @Post('createnewcorporatesuperuser')
-    async createNewCorporateSuperUser(@Body() userDto: UserDto) {
+    async createNewCorporateSuperUser(@Body() userDto: UserDto): Promise<any> {
 
         return this.corporateService.createNewCorporateSuperUser(userDto);
     }
 
     @UseGuards(AuthGuard('jwt'))
     @Post('createnewcorporateuser')
-    async createNewCorporateUser(@Body() userDto: UserDto) {
+    async createNewCorporateUser(@Body() userDto: UserDto): Promise<any> {
 
         return this.corporateService.createNewCorporateUser(userDto);
     }

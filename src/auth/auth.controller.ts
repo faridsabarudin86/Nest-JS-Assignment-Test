@@ -9,13 +9,13 @@ export class AuthController {
     constructor(private authService: AuthService) {}
 
     @Post('signincustomer')
-    async signInCustomer(@Body() signInCustomerDto: SignInCustomerDto) {
+    async signInCustomer(@Body() signInCustomerDto: SignInCustomerDto): Promise<any> {
 
         return this.authService.signInCustomer(signInCustomerDto);
     }
 
     @Post('signincorporate')
-    async signInCorporate(@Body() signInCorporateDto: SignInCorporateDto) {
+    async signInCorporate(@Body() signInCorporateDto: SignInCorporateDto): Promise<any> {
 
         return this.authService.signInCorporate(signInCorporateDto);
     }

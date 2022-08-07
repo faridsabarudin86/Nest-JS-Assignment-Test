@@ -5,8 +5,8 @@ import { UserSchema } from 'src/auth/schemas/user.schema';
 import { CustomerVehicleSchema } from 'src/customer/schemas/customer-vehicle.schema';
 import { CorporateController } from './corporate.controller';
 import { CorporateService } from './corporate.service';
-import { CorporateBranchesSchema } from './schema/corporate-branches.schema';
-import { CorporateSchema } from './schema/corporate.schema';
+import { CorporateBranchesSchema } from './schemas/corporate-branches.schema';
+import { CorporateSchema } from './schemas/corporate.schema';
 
 @Module({
     imports: [

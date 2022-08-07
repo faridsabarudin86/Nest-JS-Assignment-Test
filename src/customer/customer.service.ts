@@ -16,7 +16,7 @@ export class CustomerService {
         @InjectModel('CustomerVehicle') private readonly customerVehicleModel: Model<CustomerVehicleDto>,
         ) {}
 
-        async registerNewCustomer(registerNewCustomerDto: RegisterNewCustomerDto) {
+        async registerNewCustomer(registerNewCustomerDto: RegisterNewCustomerDto): Promise<any> {
             
             registerNewCustomerDto.uuid = uuid();
 
@@ -27,7 +27,7 @@ export class CustomerService {
             return await newUser.save();
         }
 
-        async addVehicle(addVehicleDto: AddVehicleDto, request: any) {
+        async addVehicle(addVehicleDto: AddVehicleDto, request: any): Promise<any> {
 
             const findUserType = await this.userModel.findOne( { uuid: request.userId, userType: UserRoles.customer } );
 
@@ -42,7 +42,7 @@ export class CustomerService {
             return await newVehicle.save();
         }
 
-        async addAlternateDrivers(addAlternateDriverDto: AddAlternateDriverDto, request: any) {
+        async addAlternateDrivers(addAlternateDriverDto: AddAlternateDriverDto, request: any): Promise<any> {
 
             const findVehicle = await this.customerVehicleModel.findOne({ ownerUuid: request.userId, chassisNumber: addAlternateDriverDto.chassisNumber});
             if (!findVehicle) throw new BadRequestException('Searched Vehicle is not found');
