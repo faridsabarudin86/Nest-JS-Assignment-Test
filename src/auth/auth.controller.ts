@@ -1,22 +1,26 @@
 import { Body, Controller, Post, Get, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserDto } from './dtos/user.dto';
-import { SignInCorporateDto } from './dtos/signInCorporate.dto';
-import { SignInCustomerDto } from './dtos/signInCustomer.dto';
+import { SignInDto } from './dtos/sign-in.dto';
 
 @Controller('auth')
 export class AuthController {
     constructor(private authService: AuthService) {}
 
     @Post('signincustomer')
-    async signInCustomer(@Body() signInCustomerDto: SignInCustomerDto): Promise<any> {
+    async signInCustomer(@Body() signInDto: SignInDto): Promise<any> {
 
-        return this.authService.signInCustomer(signInCustomerDto);
+        return this.authService.signInCustomer(signInDto);
     }
 
     @Post('signincorporate')
-    async signInCorporate(@Body() signInCorporateDto: SignInCorporateDto): Promise<any> {
+    async signInCorporate(@Body() signInDto: SignInDto): Promise<any> {
 
-        return this.authService.signInCorporate(signInCorporateDto);
+        return this.authService.signInCorporate(signInDto);
+    }
+
+    @Post('signinsystemadmin')
+    async signInSystemAdmin(@Body() signInDto: SignInDto): Promise<any> {
+        
+        return this.authService.signInCorporate(signInDto);
     }
 }

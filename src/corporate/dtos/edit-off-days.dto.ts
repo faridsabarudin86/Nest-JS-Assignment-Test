@@ -1,8 +1,6 @@
-export class CorporateBranchesDto {
-    uuid?: string;
-    corporateUuid?: string;
-    name?: string;
-    address?: string;
+export class EditOffDaysDto {
+    corporateUuid: string;
+    corporateBranchUuid: string;
     workingHours?: {
         startWorkingHours?: number,
         endWorkingHours?: number,

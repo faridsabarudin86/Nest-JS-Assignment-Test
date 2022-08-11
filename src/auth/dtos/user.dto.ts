@@ -4,6 +4,6 @@ export class UserDto {
     password: string;
     fullName: string;
     userType: string;
-    corporateUuid: string;
-    corporateBranchUuid: string;
+    corporateUuid: string[];
+    corporateBranchUuid: string[];
 }

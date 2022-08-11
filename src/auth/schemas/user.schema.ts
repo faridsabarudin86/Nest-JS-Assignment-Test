@@ -6,6 +6,6 @@ export const UserSchema = new mongoose.Schema ({
     password: String,
     fullName: String,
     userType: String,
-    corporateUuid: String,
-    corporateBranchUuid: String,
+    corporateUuid: [String],
+    corporateBranchUuid: [String],
 })

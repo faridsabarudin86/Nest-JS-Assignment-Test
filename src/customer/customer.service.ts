@@ -19,7 +19,6 @@ export class CustomerService {
         async registerNewCustomer(registerNewCustomerDto: RegisterNewCustomerDto): Promise<any> {
             
             registerNewCustomerDto.uuid = uuid();
-
             registerNewCustomerDto.userType = UserRoles.customer;
 
             const newUser = new this.userModel(registerNewCustomerDto);
@@ -29,12 +28,7 @@ export class CustomerService {
 
         async addVehicle(addVehicleDto: AddVehicleDto, request: any): Promise<any> {
 
-            const findUserType = await this.userModel.findOne( { uuid: request.userId, userType: UserRoles.customer } );
-
-            if(!findUserType) throw new BadRequestException('User does not have permission to use this feature');
-
             addVehicleDto.uuid = uuid();
-
             addVehicleDto.ownerUuid = request.userId;
 
             const newVehicle = new this.customerVehicleModel(addVehicleDto);
