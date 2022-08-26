@@ -1,60 +1,55 @@
-import { Body, Controller, Post, UseGuards, Request, Put } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { UserDto } from 'src/auth/dtos/user.dto';
+import { Body, Controller, Post, UseGuards, Request, Put, Get } from '@nestjs/common';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { UserRoles } from 'src/common/config/userRoles';
 import { CorporateService } from './corporate.service';
-import { CorporateBranchesDto } from './dtos/corporate-branches.dto';
-import { CorporateDto } from './dtos/corporate.dto';
-import { EditOffDaysDto } from './dtos/edit-off-days.dto';
+import { AddEmployeeDto } from './dtos/addEmployee.dto';
+import { GetEmployeeDto } from './dtos/getAllEmployees.dto';
+import { AddCorporateAdminDto } from './dtos/addCorporateAdmin.dto';
+import { AddCorporateDto } from './dtos/addCorporate.dto';
+import { AddBranchDto } from './dtos/addBranch.dto';
 
 @Controller('corporate')
 export class CorporateController {
     constructor(private corporateService: CorporateService,) {}
 
-    @UseGuards(AuthGuard('jwt'))
-    @Post('createnewcorporate')
-    async createNewCorporate(@Body() corporateDto: CorporateDto, @Request() request: any): Promise<any> {
-
-        return this.corporateService.createNewCorporate(corporateDto, request.user);
+    @Roles(UserRoles.superAdmin || UserRoles.corporate)
+    @UseGuards(JwtAuthGuard)
+    @Get('getallemployees')
+    async getAllEmployees(@Body() getEmployeeDto: GetEmployeeDto, @Request() request: any): Promise<any>
+    {
+        return this.corporateService.getAllEmployees(getEmployeeDto, request.user);
+    }
+    
+    @Roles(UserRoles.superAdmin || UserRoles.corporate)
+    @UseGuards(JwtAuthGuard)
+    @Post('addemployee')
+    async addEmployee(@Body() addEmployeeDto: AddEmployeeDto, @Request() request: any): Promise<any>
+    {
+        return this.corporateService.addEmployee(addEmployeeDto, request.user);
     }
 
-    @UseGuards(AuthGuard('jwt'))
-    @Post('createnewcorporatebranch')
-    async createNewCorporateBranch(@Body() corporateBranchesDto: CorporateBranchesDto, @Request() request: any): Promise<any> {
-
-        return this.corporateService.createNewCorporateBranch(corporateBranchesDto, request.user);
+    @Roles(UserRoles.superAdmin)
+    @UseGuards(JwtAuthGuard)
+    @Post('addcorporateadmin')
+    async addCorporateAdmin(@Body() addCorporateAdminDto: AddCorporateAdminDto, @Request() request: any): Promise<any>
+    {
+        return this.corporateService.addCorporateAdmin(addCorporateAdminDto, request.user);
     }
 
-    @Post('createnewcorporatesuperuser')
-    async createNewCorporateSuperUser(@Body() userDto: UserDto, @Request() request: any): Promise<any> {
-
-        return this.corporateService.createNewCorporateSuperUser(userDto, request.user);
+    @Roles(UserRoles.superAdmin)
+    @UseGuards(JwtAuthGuard)
+    @Post('addcorporate')
+    async addCorporate(@Body() addCorporateDto: AddCorporateDto, @Request() request: any): Promise<any>
+    {
+        return this.corporateService.addCorporate(addCorporateDto, request.user);
     }
 
-    @UseGuards(AuthGuard('jwt'))
-    @Post('createnewcorporateuser')
-    async createNewCorporateUser(@Body() userDto: UserDto, @Request() request: any): Promise<any> {
-
-        return this.corporateService.createNewCorporateUser(userDto, request.user);
-    }
-
-    @UseGuards(AuthGuard('jwt'))
-    @Put('editoffdays')
-    async editOffDays(@Body() editOffDaysDto: EditOffDaysDto, @Request() request: any): Promise<any> {
-
-        return this.corporateService.editOffDays(editOffDaysDto, request.user);
-    }
-
-    @UseGuards(AuthGuard('jwt'))
-    @Put('editstartingworkinghours')
-    async editStartingWorkingHours(@Body() corporateBranchesDto: CorporateBranchesDto, @Request() request: any): Promise<any> {
-
-        return this.corporateService.editStartingWorkingHours(corporateBranchesDto, request.user);
-    }
-
-    @UseGuards(AuthGuard('jwt'))
-    @Put('editendworkinghours')
-    async editEndWorkingHours(@Body() corporateBranchesDto: CorporateBranchesDto, @Request() request: any): Promise<any> {
-
-        return this.corporateService.editEndWorkingHours(corporateBranchesDto, request.user);
+    @Roles(UserRoles.superAdmin || UserRoles.corporate)
+    @UseGuards(JwtAuthGuard)
+    @Post('addbranch')
+    async addBranch(@Body() addBranchDto: AddBranchDto, @Request() request: any): Promise<any>
+    {
+        return this.corporateService.addBranch(addBranchDto, request.user);
     }
 }

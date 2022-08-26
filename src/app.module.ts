@@ -3,15 +3,25 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
-import { CustomerModule } from './customer/customer.module';
 import { CorporateModule } from './corporate/corporate.module';
-import { BookingController } from './booking/booking.controller';
-import { BookingModule } from './booking/booking.module';
-import config from 'src/config/defaults';
+import config from 'src/common/config/defaults';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { RolesGuard } from './common/guards/roles.guard';
 
 @Module({
-  imports: [MongooseModule.forRoot(config.mongoURI), AuthModule, CustomerModule, CorporateModule, BookingModule],
-  controllers: [AppController, BookingController],
-  providers: [AppService],
+  imports: [MongooseModule.forRoot(config.mongoURI), AuthModule, CorporateModule],
+  controllers: [AppController],
+  providers: [
+    AppService, 
+    {
+      provide: APP_GUARD,
+      useClass: RolesGuard,
+    },
+    {
+      provide: APP_GUARD, 
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}
