@@ -1,7 +1,10 @@
 import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString, IsUUID } from "class-validator";
 
-export class GetAllEmployeeDto 
+export class GetEmployeeDto 
 {
+    @IsUUID(4)
+    uuid: string;
+
     @IsUUID(4)
     corporateUuid: string;
 
