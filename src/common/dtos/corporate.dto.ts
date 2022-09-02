@@ -2,22 +2,9 @@ import { IsEmail, IsNotEmpty, IsPhoneNumber, IsString, IsUUID } from "class-vali
 
 export class CorporateDto 
 {
-    @IsUUID(4)
-    uuid: string;
-
-    @IsNotEmpty()
-    @IsString()
-    name: string;
-
-    @IsNotEmpty()
-    @IsEmail()
-    emailAddress: string;
-
-    @IsNotEmpty()
-    @IsString()
-    headquartersAddress: string;
-
-    @IsNotEmpty()
-    @IsString()
-    country: string;
+    uuid?: string;
+    name?: string;
+    emailAddress?: string;
+    headquartersAddress?: string;
+    country?: string;
 }

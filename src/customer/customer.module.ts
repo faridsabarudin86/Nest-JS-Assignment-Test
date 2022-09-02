@@ -12,8 +12,6 @@ import { CustomerService } from './customer.service';
   imports: 
   [
     MongooseModule.forFeature([{name: 'User', schema: UserSchema}]),
-    MongooseModule.forFeature([{name: 'Corporate', schema: CorporateSchema}]),
-    MongooseModule.forFeature([{name: 'CorporateBranch', schema: CorporateBranchSchema}]),
     MongooseModule.forFeature([{name: 'Vehicle', schema: VehicleSchema}]),
     AuthModule,
   ],

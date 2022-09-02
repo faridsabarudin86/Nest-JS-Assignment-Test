@@ -8,11 +8,10 @@ import config from 'src/common/config/defaults';
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
-import { BookingModule } from './booking/booking.module';
 import { CustomerModule } from './customer/customer.module';
 
 @Module({
-  imports: [MongooseModule.forRoot(config.mongoURI), AuthModule, CorporateModule, BookingModule, CustomerModule],
+  imports: [MongooseModule.forRoot(config.mongoURI), AuthModule, CorporateModule, CustomerModule],
   controllers: [AppController],
   providers: [
     AppService, 

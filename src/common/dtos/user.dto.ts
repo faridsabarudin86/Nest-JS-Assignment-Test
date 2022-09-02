@@ -3,32 +3,21 @@ import { UserRoles } from "src/common/config/userRoles";
 
 export class UserDto {
 
-    @IsUUID(4)
-    uuid: string;
+    uuid?: string;
+    emailAddress?: string;
+    password?: string;
+    fullName?: string;
+    phoneNumber?: string;
+    role?: string;
 
-    @IsEmail()
-    emailAddress: string;
-
-    @IsString()
-    password: string;
-
-    @IsString()
-    fullName: string;
-    
-    @IsPhoneNumber()
-    phoneNumber: string;
-
-    @IsString()
-    role: string;
-
-    corporate:
+    corporate?:
     {
-        uuid: string;
-        role: string;
-        branch:
+        uuid?: string;
+        role?: string;
+        branch?:
         [{
-            uuid: string,
-            role: string,
+            uuid?: string,
+            role?: string,
         }]
     }
 }
