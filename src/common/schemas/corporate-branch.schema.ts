@@ -7,10 +7,7 @@ export const CorporateBranchSchema = new mongoose.Schema
     name: {type: String},
     emailAddress: {type: String},
     branchAddress: {type: String},
-    workingHours :
-    {
-        startWorkingHours: {type: String},
-        endWorkingHours: {type: String},
-        offDays: {type: [String]},
-    }
+    startWorkingHours: {type: Date},
+    endWorkingHours: {type: Date},
+    offDays: {type: [Number]},
 })

@@ -6,7 +6,7 @@ export class VehicleDto
     information?:
     [{
         uuid?: string,
-        alternateDrivers?: [string],
+        alternateDrivers?: string[],
         brand?: string,
         model?: string,
         type?: string,

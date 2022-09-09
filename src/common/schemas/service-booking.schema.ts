@@ -6,11 +6,15 @@ export const ServiceBookingSchema = new mongoose.Schema
     corporateUuid: {type: String},
     branchUuid: {type: String},
     date: {type: Date},
-    day: {type: String},
+    techniciansOfTheDay: {type: [String]},
     slots:
     [{
-        startTime: {type: Number},
-        endTime: {type: Number},
-        duration: {type: Number},
+        uuid: {type: String},
+        startTime: {type: Date},
+        endTime: {type: Date},
+        customerUuid: {type: String},
+        alternateDriverUuid: {type: String},
+        vehicleUuid: {type: String},
+        assignedTechnician: {type: [String]},
     }]
 })

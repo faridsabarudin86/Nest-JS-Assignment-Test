@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsArray, IsEmail, IsNotEmpty, IsObject, IsString, IsUUID, ValidateNested } from "class-validator";
+import { IsArray, IsEmail, IsNotEmpty, IsNumber, IsObject, IsString, IsUUID, ValidateNested } from "class-validator";
 
 class WorkingHoursProperties
 {
@@ -38,7 +38,15 @@ export class AddBranchDto
     @IsString()
     branchAddress: string;
 
-    @ValidateNested({each: true})
-    @Type(() => WorkingHoursProperties)
-    workingHours: WorkingHoursProperties;
+    @IsNotEmpty()
+    @IsNumber()
+    startWorkingHours: number;
+
+    @IsNotEmpty()
+    @IsNumber()
+    endWorkingHours: number;
+
+    @IsNotEmpty()
+    @IsArray()
+    offDays: [number];
 }

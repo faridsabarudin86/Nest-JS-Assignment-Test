@@ -7,7 +7,7 @@ export class CorporateBranchDto
     name?: string;
     emailAddress?: string;
     branchAddress?: string;
-    startWorkingHours?: string;
-    endWorkingHours?: string;
-    offDays?: [string];
+    startWorkingHours?: number;
+    endWorkingHours?: number;
+    offDays?: number[];
 }
