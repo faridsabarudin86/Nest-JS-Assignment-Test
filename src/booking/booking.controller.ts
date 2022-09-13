@@ -5,6 +5,7 @@ import { UserRoles } from 'src/common/config/userRoles';
 import { BookingService } from './booking.service';
 import { SetDailyScheduleDto } from './dtos/setDailySchedule.dto';
 import { AssignTechnicianToDailyScheduleDto } from './dtos/assignedTechnicianToDailySchedule.dto';
+import { AddBookingDto } from './dtos/addBooking.dto';
 
 @Controller('booking')
 export class BookingController 
@@ -23,16 +24,17 @@ export class BookingController
 
     }
 
-    @Post()
-    async addBooking(): Promise<any>
+    @Roles(UserRoles.customer)
+    @UseGuards(JwtAuthGuard)
+    @Put('addbooking')
+    async addBooking(@Body() addBookingDto: AddBookingDto, @Request() request: any): Promise<any>
     {
-
+        return this.bookingService.addBooking(addBookingDto, request.user);
     }
 
     @Put()
     async cancelBooking(): Promise<any>
     {
-
     }
 
     @Roles(UserRoles.superAdmin, UserRoles.corporate)

@@ -141,7 +141,6 @@ export class CorporateService {
         for (let i = 0; i < addEmployeeDto.corporate.length; i++) {
             addEmployeeDto.corporate[i].uuid = addEmployeeDto.corporateUuid;
             addEmployeeDto.corporate[i].role = UserRoles.employee;
-            addEmployeeDto.corporate[i].branch[i].role = UserRoles.sales;
             addEmployeeDto.corporate[i].branch[i].uuid = addEmployeeDto.branchUuid;
         }
 

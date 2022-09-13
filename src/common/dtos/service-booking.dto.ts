@@ -10,7 +10,6 @@ export class ServiceBookingDto
         uuid?: string,
         startTime?: number,
         endTime?: number,
-        duration?: number,
         customerUuid?: string,
         alternateDriverUuid?: string,
         vehicleUuid?: string,

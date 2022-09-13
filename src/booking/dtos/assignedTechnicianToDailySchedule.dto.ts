@@ -6,10 +6,6 @@ export class AssignTechnicianToDailyScheduleDto
     @IsNotEmpty()
     uuid: string;
 
-    @IsEmail()
-    @IsNotEmpty()
-    technicianEmailAddress: string[];
-
     @IsUUID()
     @IsNotEmpty()
     corporateUuid: string;
@@ -19,7 +15,6 @@ export class AssignTechnicianToDailyScheduleDto
     branchUuid: string;
     
     @IsArray()
-    @IsOptional()
     @ArrayMaxSize(10)
-    techniciansOfTheDay: string[];
+    techniciansOfTheDay: [string];
 }

@@ -1,6 +1,15 @@
 import { Type } from "class-transformer";
 import { IsArray, IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, IsUUID, ValidateNested } from "class-validator";
 
+class BranchProperties
+{
+    uuid: string;
+
+    @IsNotEmpty()
+    @IsString()
+    role: string;
+}
+
 class CorporateProperties
 {
 
@@ -10,12 +19,6 @@ class CorporateProperties
     @ValidateNested({each: true})
     @Type(() => BranchProperties)
     branch: BranchProperties[]
-}
-
-class BranchProperties
-{
-    uuid: string;
-    role: string;
 }
 
 export class AddEmployeeDto 

@@ -6,7 +6,7 @@ export const ServiceBookingSchema = new mongoose.Schema
     corporateUuid: {type: String},
     branchUuid: {type: String},
     date: {type: Date},
-    techniciansOfTheDay: {type: [String]},
+    techniciansOfTheDay: {type: [String], validate: [arrayLimit, '{PATH} exceeds the limit of 10']},
     slots:
     [{
         uuid: {type: String},
@@ -18,3 +18,8 @@ export const ServiceBookingSchema = new mongoose.Schema
         assignedTechnician: {type: [String]},
     }]
 })
+
+function arrayLimit(val) 
+{
+    return val.length <= 10;
+}

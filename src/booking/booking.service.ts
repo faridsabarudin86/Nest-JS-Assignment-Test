@@ -11,6 +11,8 @@ import { SetDailyScheduleDto } from './dtos/setDailySchedule.dto';
 import { v4 as uuid } from 'uuid';
 import { UserRoles } from 'src/common/config/userRoles';
 import { AssignTechnicianToDailyScheduleDto } from './dtos/assignedTechnicianToDailySchedule.dto';
+import { AddBookingDto } from './dtos/addBooking.dto';
+import e from 'express';
 
 @Injectable()
 export class BookingService {
@@ -31,8 +33,89 @@ export class BookingService {
 
     }
 
-    async addBooking(): Promise<any> {
+    async addBooking(addBookingDto: AddBookingDto, request: any): Promise<any> {
 
+        const verifyUser = await this.userModel.findOne
+            ({
+                uuid: request.userId,
+            })
+        if (!verifyUser) throw new BadRequestException('User is not authorized');
+
+        const findBooking = await this.serviceBookingModel.findOne
+            ({
+                uuid: addBookingDto.uuid,
+                corporateUuid: addBookingDto.corporateUuid,
+                branchUuid: addBookingDto.branchUuid,
+            },
+            {
+                slots: { $elemMatch: { uuid: addBookingDto.slotsUuid }}
+            }
+            )
+        if (!findBooking) throw new BadRequestException('User is not authorized');
+
+        console.log(findBooking)
+        // }
+
+        const findVehicle = await this.vehicleModel.findOne(
+            {
+                ownerUuid: request.userId,
+            },
+            {
+                information: { $elemMatch: { uuid: addBookingDto.vehicleUuid } },
+            })
+        if (!findVehicle) throw new BadRequestException('User is not authorized');
+
+        const updatedInformation =
+        {
+            'slots.$.customerUuid': request.userId,
+            'slots.$.assignedTechnician': addBookingDto.slotsUuid,
+            'slots.$.vehicleUuid': addBookingDto.vehicleUuid,
+            'slots.$.alternateDriverUuid': addBookingDto.alternateDriverUuid,
+        }
+
+        // Object.keys(updatedInformation).forEach
+        //     (key => {
+
+        //         if (updatedInformation['slots.alternateDriverUuid'] !== null || '')
+        //         {
+        //             const findAlternateDriver = this.vehicleModel.findOne({
+        //                 ownerUuid: request.userId,
+        //                 'information': { $elemMatch: { 'uuid': addBookingDto.vehicleUuid } },
+        //                 'information.alternateDrivers': addBookingDto.alternateDriverUuid,
+        //             })
+        //             if (!findAlternateDriver) throw new BadRequestException('User is not authorized');
+        //         }
+
+        //         if (updatedInformation[key] === null || updatedInformation[key] === '') {
+        //             delete updatedInformation[key];
+        //         }
+        //     });
+
+        // Check If vehicle is SUV (Insert ). If Yes then requries to have 2 Technician to update. If not then only requires 1 update.
+        // if (findVehicle.information[0].type == 'SUV') {
+
+        // }
+        // else {
+
+        // for(let i = 0; i < findBooking.slots.length; i++)
+        // {
+        const updateBooking = await this.serviceBookingModel.findOneAndUpdate(
+            {
+                uuid: addBookingDto.uuid,
+                corporateUuid: addBookingDto.corporateUuid,
+                branchUuid: addBookingDto.branchUuid,
+            },
+            {
+                $push: { updatedInformation }
+            },
+            {
+                select: { slots: { $elemMatch: { uuid: addBookingDto.slotsUuid }}},
+                new: true
+            },
+        )
+        
+        return await updateBooking.save()
+        // }
     }
 
     async cancelBooking(): Promise<any> {
@@ -92,6 +175,8 @@ export class BookingService {
             setDailyScheduleDto.slots[i].uuid = uuid();
         }
 
+        setDailyScheduleDto.uuid = uuid();
+
         for (let i = 0; i < setDailyScheduleDto.slots.length; i++) {
 
             setDailyScheduleDto.slots[i].startTime = new Date
@@ -141,9 +226,10 @@ export class BookingService {
         for (let i = 0; i < assignTechnicianToDailyScheduleDto.techniciansOfTheDay.length; i++) {
 
             const findTechnician = await this.userModel.findOne({
-                emailAddress: assignTechnicianToDailyScheduleDto.technicianEmailAddress[i],
+                emailAddress: assignTechnicianToDailyScheduleDto.techniciansOfTheDay[i],
+                'corporate.branch.role': UserRoles.technician,
                 'corporate.uuid': assignTechnicianToDailyScheduleDto.corporateUuid,
-                'corporate.branch.role': assignTechnicianToDailyScheduleDto.branchUuid
+                'corporate.branch.uuid': assignTechnicianToDailyScheduleDto.branchUuid
             })
 
             if (!findTechnician) throw new BadRequestException('User does not exist');
