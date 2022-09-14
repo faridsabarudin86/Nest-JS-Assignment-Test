@@ -35,26 +35,10 @@ export class BookingService {
 
     async addBooking(addBookingDto: AddBookingDto, request: any): Promise<any> {
 
-        const verifyUser = await this.userModel.findOne
-            ({
+        const verifyUser = await this.userModel.findOne({
                 uuid: request.userId,
             })
         if (!verifyUser) throw new BadRequestException('User is not authorized');
-
-        const findBooking = await this.serviceBookingModel.findOne
-            ({
-                uuid: addBookingDto.uuid,
-                corporateUuid: addBookingDto.corporateUuid,
-                branchUuid: addBookingDto.branchUuid,
-            },
-            {
-                slots: { $elemMatch: { uuid: addBookingDto.slotsUuid }}
-            }
-            )
-        if (!findBooking) throw new BadRequestException('User is not authorized');
-
-        console.log(findBooking)
-        // }
 
         const findVehicle = await this.vehicleModel.findOne(
             {
@@ -62,20 +46,31 @@ export class BookingService {
             },
             {
                 information: { $elemMatch: { uuid: addBookingDto.vehicleUuid } },
-            })
+            }
+            )
         if (!findVehicle) throw new BadRequestException('User is not authorized');
 
         const updatedInformation =
         {
-            'slots.$.customerUuid': request.userId,
-            'slots.$.assignedTechnician': addBookingDto.slotsUuid,
-            'slots.$.vehicleUuid': addBookingDto.vehicleUuid,
-            'slots.$.alternateDriverUuid': addBookingDto.alternateDriverUuid,
+            'slots.0.customerUuid': request.userId,
+            'slots.0.assignedTechnician': addBookingDto.assignedTechnician,
+            'slots.0.vehicleUuid': addBookingDto.vehicleUuid,
+            'slots.0.alternateDriverUuid': addBookingDto.alternateDriverUuid,
         }
 
+        const updateBooking = await this.serviceBookingModel.updateOne(
+            { uuid: addBookingDto.uuid },
+            { $set: {'slots.0.customerUuid': request.userId,
+            'slots.0.assignedTechnician': addBookingDto.assignedTechnician,
+            'slots.0.vehicleUuid': addBookingDto.vehicleUuid,
+            'slots.0.alternateDriverUuid': addBookingDto.alternateDriverUuid,} },
+            { select: { slots: { $elemMatch: { uuid: addBookingDto.slotsUuid }}}, new: true },
+        )
+
+        return updateBooking;
         // Object.keys(updatedInformation).forEach
         //     (key => {
-
+5
         //         if (updatedInformation['slots.alternateDriverUuid'] !== null || '')
         //         {
         //             const findAlternateDriver = this.vehicleModel.findOne({
@@ -99,23 +94,6 @@ export class BookingService {
 
         // for(let i = 0; i < findBooking.slots.length; i++)
         // {
-        const updateBooking = await this.serviceBookingModel.findOneAndUpdate(
-            {
-                uuid: addBookingDto.uuid,
-                corporateUuid: addBookingDto.corporateUuid,
-                branchUuid: addBookingDto.branchUuid,
-            },
-            {
-                $push: { updatedInformation }
-            },
-            {
-                select: { slots: { $elemMatch: { uuid: addBookingDto.slotsUuid }}},
-                new: true
-            },
-        )
-        
-        return await updateBooking.save()
-        // }
     }
 
     async cancelBooking(): Promise<any> {

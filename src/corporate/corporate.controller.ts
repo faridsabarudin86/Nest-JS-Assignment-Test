@@ -14,10 +14,23 @@ import { UpdateSelfAccountDto } from './dtos/updateSelfAccount.dto';
 import { UpdateCorporateDto } from './dtos/updateCorporate.dto';
 import { DeleteEmployeeDto } from './dtos/deleteEmployee.dto';
 import { UpdateCorporateBranchDto } from './dtos/updateCorporateBranch.dto';
+import { AuthService } from 'src/auth/auth.service';
+import { Public } from 'src/common/decorators/public.decorator';
+import { SignInDto } from 'src/auth/dtos/sign-in.dto';
 
 @Controller('corporate')
 export class CorporateController {
-    constructor(private corporateService: CorporateService) {}
+    constructor(
+        private corporateService: CorporateService,
+        private authService: AuthService,
+    ) {}
+
+    @Public()
+    @Post('signincorporate')
+    async signInCorporate(@Body() signInDto: SignInDto): Promise<any> {
+
+        return this.authService.signInCorporate(signInDto);
+    }
 
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)

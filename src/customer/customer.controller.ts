@@ -1,4 +1,6 @@
 import { Controller, Delete, Get, Post, Put, UseGuards, Request, Body } from '@nestjs/common';
+import { AuthService } from 'src/auth/auth.service';
+import { SignInDto } from 'src/auth/dtos/sign-in.dto';
 import { UserRoles } from 'src/common/config/userRoles';
 import { Public } from 'src/common/decorators/public.decorator';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -15,7 +17,17 @@ import { UpdateVehicleDto } from './dtos/updateVehicle.dto';
 @Controller('customer')
 export class CustomerController 
 {
-    constructor(private customerService: CustomerService) {}
+    constructor(
+        private customerService: CustomerService,
+        private authService: AuthService,
+        ) {}
+
+    @Public()
+    @Post('signincustomer')
+    async signInCustomer(@Body() signInDto: SignInDto): Promise<any> 
+    {    
+        return this.authService.signInCustomer(signInDto);
+    }
 
     @Public()
     @Post('registercustomer')
