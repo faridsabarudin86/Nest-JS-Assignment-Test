@@ -13,6 +13,8 @@ import { UserRoles } from 'src/common/config/userRoles';
 import { AssignTechnicianToDailyScheduleDto } from './dtos/assignedTechnicianToDailySchedule.dto';
 import { AddBookingDto } from './dtos/addBooking.dto';
 import e from 'express';
+import { BookingStatus } from 'src/common/config/bookingStatus';
+import { GetAllBookingCorporateDto } from './dtos/getAllBookingCorporate.dto';
 
 @Injectable()
 export class BookingService {
@@ -25,8 +27,37 @@ export class BookingService {
             @InjectModel('ServiceBooking') private readonly serviceBookingModel: Model<ServiceBookingDto>,
         ) { }
 
-    async getAllBooking(): Promise<any> {
+    async getAllBookingCorporate(getAllBookingCorporateDto: GetAllBookingCorporateDto, request: any): Promise<any> {
 
+        const verifyUser = await this.userModel.findOne({
+            uuid: request.userId,
+            $or: [
+                {
+                    role: UserRoles.superAdmin
+                },
+                {
+                    role: UserRoles.corporate,
+                    'corporate.uuid': getAllBookingCorporateDto.corporateUuid,
+                    'corporate.role': UserRoles.corporateAdmin,
+                },
+                {
+                    role: UserRoles.corporate,
+                    'corporate.uuid': getAllBookingCorporateDto.corporateUuid,
+                    'corporate.branch.uuid': getAllBookingCorporateDto.branchUuid,
+                    'corporate.branch.role': UserRoles.branchAdmin,
+                }
+            ],
+        })
+        if (!verifyUser) throw new BadRequestException('User is not authorized');
+
+        const findAllBookings = await this.serviceBookingModel.find({
+            corporateUuid: getAllBookingCorporateDto.corporateUuid,
+            branchUuid: getAllBookingCorporateDto.branchUuid,
+            date: getAllBookingCorporateDto.date,
+        })
+        if (!findAllBookings) throw new BadRequestException('User is not authorized');
+
+        return findAllBookings;
     }
 
     async getBookingInformation(): Promise<any> {
@@ -56,44 +87,41 @@ export class BookingService {
             'slots.0.assignedTechnician': addBookingDto.assignedTechnician,
             'slots.0.vehicleUuid': addBookingDto.vehicleUuid,
             'slots.0.alternateDriverUuid': addBookingDto.alternateDriverUuid,
+            'slots.0.status': BookingStatus.booked,
         }
 
-        const updateBooking = await this.serviceBookingModel.updateOne(
-            { uuid: addBookingDto.uuid },
-            { $set: {'slots.0.customerUuid': request.userId,
-            'slots.0.assignedTechnician': addBookingDto.assignedTechnician,
-            'slots.0.vehicleUuid': addBookingDto.vehicleUuid,
-            'slots.0.alternateDriverUuid': addBookingDto.alternateDriverUuid,} },
-            { select: { slots: { $elemMatch: { uuid: addBookingDto.slotsUuid }}}, new: true },
-        )
+        const objKeys = Object.keys(updatedInformation)
+        objKeys.forEach
+            (key => {
+                if ((updatedInformation[key] === null || updatedInformation[key] === '')) 
+                {
+                    delete updatedInformation[key];
+                }
+            });
 
-        return updateBooking;
-        // Object.keys(updatedInformation).forEach
-        //     (key => {
-5
-        //         if (updatedInformation['slots.alternateDriverUuid'] !== null || '')
-        //         {
-        //             const findAlternateDriver = this.vehicleModel.findOne({
-        //                 ownerUuid: request.userId,
-        //                 'information': { $elemMatch: { 'uuid': addBookingDto.vehicleUuid } },
-        //                 'information.alternateDrivers': addBookingDto.alternateDriverUuid,
-        //             })
-        //             if (!findAlternateDriver) throw new BadRequestException('User is not authorized');
-        //         }
+        if(findVehicle.information[0].type == "SUV")
+        {
+            if(addBookingDto.assignedTechnician.length == 2)
+            {
+                const updateBooking = await this.serviceBookingModel.findOneAndUpdate(
+                    { uuid: addBookingDto.uuid },
+                    { $set: updatedInformation },
+                    { select: { slots: { $elemMatch: { uuid: addBookingDto.slotsUuid }}}, new: true },
+                ) 
+        
+                return updateBooking.save();
 
-        //         if (updatedInformation[key] === null || updatedInformation[key] === '') {
-        //             delete updatedInformation[key];
-        //         }
-        //     });
-
-        // Check If vehicle is SUV (Insert ). If Yes then requries to have 2 Technician to update. If not then only requires 1 update.
-        // if (findVehicle.information[0].type == 'SUV') {
-
-        // }
-        // else {
-
-        // for(let i = 0; i < findBooking.slots.length; i++)
-        // {
+            } throw new BadRequestException('User is not authorized')
+        }
+        else {
+            const updateBooking = await this.serviceBookingModel.findOneAndUpdate(
+                { uuid: addBookingDto.uuid },
+                { $set: updatedInformation },
+                { select: { slots: { $elemMatch: { uuid: addBookingDto.slotsUuid }}}, new: true },
+            )
+    
+            return updateBooking.save();
+        }
     }
 
     async cancelBooking(): Promise<any> {
@@ -154,6 +182,7 @@ export class BookingService {
         }
 
         setDailyScheduleDto.uuid = uuid();
+        setDailyScheduleDto.status = BookingStatus.open;
 
         for (let i = 0; i < setDailyScheduleDto.slots.length; i++) {
 

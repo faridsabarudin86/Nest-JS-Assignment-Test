@@ -30,5 +30,5 @@ export class AddBookingDto
     @IsArray()
     @ArrayMinSize(1)
     @ArrayMaxSize(2)
-    assignedTechnician: [string];
+    assignedTechnician: string[];
 }

@@ -10,6 +10,7 @@ export const ServiceBookingSchema = new mongoose.Schema
     slots:
     [{
         uuid: {type: String},
+        status: {type: String},
         startTime: {type: Date},
         endTime: {type: Date},
         customerUuid: {type: String},

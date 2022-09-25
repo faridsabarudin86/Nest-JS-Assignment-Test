@@ -6,16 +6,19 @@ import { BookingService } from './booking.service';
 import { SetDailyScheduleDto } from './dtos/setDailySchedule.dto';
 import { AssignTechnicianToDailyScheduleDto } from './dtos/assignedTechnicianToDailySchedule.dto';
 import { AddBookingDto } from './dtos/addBooking.dto';
+import { GetAllBookingCorporateDto } from './dtos/getAllBookingCorporate.dto';
 
 @Controller('booking')
 export class BookingController 
 {
     constructor(private bookingService: BookingService) {}
 
-    @Get()
-    async getAllBooking(): Promise<any>
+    @Roles(UserRoles.superAdmin, UserRoles.corporate)
+    @UseGuards(JwtAuthGuard)
+    @Get('getallbookingcorporate')
+    async getAllBookingCorporate(@Body() getAllBookingCorporateDto: GetAllBookingCorporateDto, @Request() request: any): Promise<any>
     {
-
+        return this.bookingService.getAllBookingCorporate(getAllBookingCorporateDto, request.user);
     }
 
     @Get()

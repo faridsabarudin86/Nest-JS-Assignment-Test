@@ -48,5 +48,5 @@ export class AddBranchDto
 
     @IsNotEmpty()
     @IsArray()
-    offDays: [number];
+    offDays: number[];
 }

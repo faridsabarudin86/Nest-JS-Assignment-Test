@@ -8,6 +8,7 @@ export class ServiceBookingDto
     slots:
     [{
         uuid?: string,
+        status?: string,
         startTime?: number,
         endTime?: number,
         customerUuid?: string,

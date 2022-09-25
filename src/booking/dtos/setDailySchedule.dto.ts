@@ -30,6 +30,8 @@ export class SetDailyScheduleDto
 {
     uuid: string;
 
+    status: string;
+
     @IsUUID()
     @IsNotEmpty()
     corporateUuid: string;

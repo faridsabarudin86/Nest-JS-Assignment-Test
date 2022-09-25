@@ -16,5 +16,5 @@ export class AssignTechnicianToDailyScheduleDto
     
     @IsArray()
     @ArrayMaxSize(10)
-    techniciansOfTheDay: [string];
+    techniciansOfTheDay: string[];
 }
