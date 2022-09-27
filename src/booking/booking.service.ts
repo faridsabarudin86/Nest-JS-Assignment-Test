@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { request } from 'http';
 import { Model } from 'mongoose';
@@ -15,6 +15,12 @@ import { AddBookingDto } from './dtos/addBooking.dto';
 import e from 'express';
 import { BookingStatus } from 'src/common/config/bookingStatus';
 import { GetAllBookingCorporateDto } from './dtos/getAllBookingCorporate.dto';
+import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
+import { TestCreateUserEvent } from './events/testCreateUser.event';
+import { AppService } from 'src/app.service';
+import { TestCreateUserDto } from './dtos/testCreateUser.dto';
+import { resolve } from 'path';
+import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
 
 @Injectable()
 export class BookingService {
@@ -25,9 +31,13 @@ export class BookingService {
             @InjectModel('Corporate') private readonly corporateModel: Model<CorporateDto>,
             @InjectModel('CorporateBranch') private readonly corporateBranchModel: Model<CorporateBranchDto>,
             @InjectModel('ServiceBooking') private readonly serviceBookingModel: Model<ServiceBookingDto>,
+            private eventEmitter: EventEmitter2,
+            private schedulerRegistry: SchedulerRegistry,
         ) { }
 
-    async getAllBookingCorporate(getAllBookingCorporateDto: GetAllBookingCorporateDto, request: any): Promise<any> {
+        private readonly logger = new Logger(BookingService.name);
+
+    async getAllBookingCorporate(body: GetAllBookingCorporateDto, request: any): Promise<any> {
 
         const verifyUser = await this.userModel.findOne({
             uuid: request.userId,
@@ -37,13 +47,13 @@ export class BookingService {
                 },
                 {
                     role: UserRoles.corporate,
-                    'corporate.uuid': getAllBookingCorporateDto.corporateUuid,
+                    'corporate.uuid': body.corporateUuid,
                     'corporate.role': UserRoles.corporateAdmin,
                 },
                 {
                     role: UserRoles.corporate,
-                    'corporate.uuid': getAllBookingCorporateDto.corporateUuid,
-                    'corporate.branch.uuid': getAllBookingCorporateDto.branchUuid,
+                    'corporate.uuid': body.corporateUuid,
+                    'corporate.branch.uuid': body.branchUuid,
                     'corporate.branch.role': UserRoles.branchAdmin,
                 }
             ],
@@ -51,9 +61,9 @@ export class BookingService {
         if (!verifyUser) throw new BadRequestException('User is not authorized');
 
         const findAllBookings = await this.serviceBookingModel.find({
-            corporateUuid: getAllBookingCorporateDto.corporateUuid,
-            branchUuid: getAllBookingCorporateDto.branchUuid,
-            date: getAllBookingCorporateDto.date,
+            corporateUuid: body.corporateUuid,
+            branchUuid: body.branchUuid,
+            date: body.date,
         })
         if (!findAllBookings) throw new BadRequestException('User is not authorized');
 
@@ -64,7 +74,7 @@ export class BookingService {
 
     }
 
-    async addBooking(addBookingDto: AddBookingDto, request: any): Promise<any> {
+    async addBooking(body: AddBookingDto, request: any): Promise<any> {
 
         const verifyUser = await this.userModel.findOne({
                 uuid: request.userId,
@@ -76,7 +86,7 @@ export class BookingService {
                 ownerUuid: request.userId,
             },
             {
-                information: { $elemMatch: { uuid: addBookingDto.vehicleUuid } },
+                information: { $elemMatch: { uuid: body.vehicleUuid } },
             }
             )
         if (!findVehicle) throw new BadRequestException('User is not authorized');
@@ -84,9 +94,9 @@ export class BookingService {
         const updatedInformation =
         {
             'slots.0.customerUuid': request.userId,
-            'slots.0.assignedTechnician': addBookingDto.assignedTechnician,
-            'slots.0.vehicleUuid': addBookingDto.vehicleUuid,
-            'slots.0.alternateDriverUuid': addBookingDto.alternateDriverUuid,
+            'slots.0.assignedTechnician': body.assignedTechnician,
+            'slots.0.vehicleUuid': body.vehicleUuid,
+            'slots.0.alternateDriverUuid': body.alternateDriverUuid,
             'slots.0.status': BookingStatus.booked,
         }
 
@@ -101,12 +111,12 @@ export class BookingService {
 
         if(findVehicle.information[0].type == "SUV")
         {
-            if(addBookingDto.assignedTechnician.length == 2)
+            if(body.assignedTechnician.length == 2)
             {
                 const updateBooking = await this.serviceBookingModel.findOneAndUpdate(
-                    { uuid: addBookingDto.uuid },
+                    { uuid: body.uuid },
                     { $set: updatedInformation },
-                    { select: { slots: { $elemMatch: { uuid: addBookingDto.slotsUuid }}}, new: true },
+                    { select: { slots: { $elemMatch: { uuid: body.slotsUuid }}}, new: true },
                 ) 
         
                 return updateBooking.save();
@@ -115,9 +125,9 @@ export class BookingService {
         }
         else {
             const updateBooking = await this.serviceBookingModel.findOneAndUpdate(
-                { uuid: addBookingDto.uuid },
+                { uuid: body.uuid },
                 { $set: updatedInformation },
-                { select: { slots: { $elemMatch: { uuid: addBookingDto.slotsUuid }}}, new: true },
+                { select: { slots: { $elemMatch: { uuid: body.slotsUuid }}}, new: true },
             )
     
             return updateBooking.save();
@@ -128,7 +138,7 @@ export class BookingService {
 
     }
 
-    async setDailySchedule(setDailyScheduleDto: SetDailyScheduleDto, request: any): Promise<any> {
+    async setDailySchedule(body: SetDailyScheduleDto, request: any): Promise<any> {
         const verifyUser = await this.userModel.findOne({
             uuid: request.userId,
             $or: [
@@ -137,13 +147,13 @@ export class BookingService {
                 },
                 {
                     role: UserRoles.corporate,
-                    'corporate.uuid': setDailyScheduleDto.corporateUuid,
+                    'corporate.uuid': body.corporateUuid,
                     'corporate.role': UserRoles.corporateAdmin,
                 },
                 {
                     role: UserRoles.corporate,
-                    'corporate.uuid': setDailyScheduleDto.corporateUuid,
-                    'corporate.branch.uuid': setDailyScheduleDto.branchUuid,
+                    'corporate.uuid': body.corporateUuid,
+                    'corporate.branch.uuid': body.branchUuid,
                     'corporate.branch.role': UserRoles.branchAdmin,
                 }
             ],
@@ -151,11 +161,11 @@ export class BookingService {
 
         if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-        setDailyScheduleDto.date = new Date(Date.UTC(setDailyScheduleDto.dateYear, setDailyScheduleDto.dateMonth - 1, setDailyScheduleDto.dateDay));
+        body.date = new Date(Date.UTC(body.dateYear, body.dateMonth - 1, body.dateDay));
 
         const checkTime = await this.corporateBranchModel.findOne({
-            corporateUuid: setDailyScheduleDto.corporateUuid,
-            uuid: setDailyScheduleDto.branchUuid,
+            corporateUuid: body.corporateUuid,
+            uuid: body.branchUuid,
         })
 
         if (!checkTime) throw new BadRequestException('User is not authorized');
@@ -163,51 +173,51 @@ export class BookingService {
         const startWorkingHours = new Date(checkTime.startWorkingHours);
         const endWorkingHours = new Date(checkTime.endWorkingHours);
 
-        for (let i = 0; i < setDailyScheduleDto.slots.length; i++) {
+        for (let i = 0; i < body.slots.length; i++) {
             if (
                 (
-                    (setDailyScheduleDto.slots[i].startTimeHour > startWorkingHours.getUTCHours() && setDailyScheduleDto.slots[i].startTimeMinutes > startWorkingHours.getUTCMinutes())
+                    (body.slots[i].startTimeHour > startWorkingHours.getUTCHours() && body.slots[i].startTimeMinutes > startWorkingHours.getUTCMinutes())
                     &&
-                    (setDailyScheduleDto.slots[i].endTimeHour < endWorkingHours.getUTCHours() && setDailyScheduleDto.slots[i].endTimeMinutes < endWorkingHours.getUTCMinutes())
+                    (body.slots[i].endTimeHour < endWorkingHours.getUTCHours() && body.slots[i].endTimeMinutes < endWorkingHours.getUTCMinutes())
                 )
             ) throw new BadRequestException('User is not authorized1');
         }
 
         for (let i = 0; i < checkTime.offDays.length; i++) {
-            if (setDailyScheduleDto.date.getUTCDay() === checkTime.offDays[i]) throw new BadRequestException('User is not authorized1');
+            if (body.date.getUTCDay() === checkTime.offDays[i]) throw new BadRequestException('User is not authorized1');
         }
 
-        for (let i = 0; i < setDailyScheduleDto.slots.length; i++) {
-            setDailyScheduleDto.slots[i].uuid = uuid();
+        for (let i = 0; i < body.slots.length; i++) {
+            body.slots[i].uuid = uuid();
         }
 
-        setDailyScheduleDto.uuid = uuid();
-        setDailyScheduleDto.status = BookingStatus.open;
+        body.uuid = uuid();
+        body.status = BookingStatus.open;
 
-        for (let i = 0; i < setDailyScheduleDto.slots.length; i++) {
+        for (let i = 0; i < body.slots.length; i++) {
 
-            setDailyScheduleDto.slots[i].startTime = new Date
+            body.slots[i].startTime = new Date
                 (
-                    setDailyScheduleDto.dateYear, setDailyScheduleDto.dateMonth,
-                    setDailyScheduleDto.dateDay,
-                    setDailyScheduleDto.slots[i].startTimeHour,
-                    setDailyScheduleDto.slots[i].startTimeMinutes
+                    body.dateYear, body.dateMonth,
+                    body.dateDay,
+                    body.slots[i].startTimeHour,
+                    body.slots[i].startTimeMinutes
                 );
 
-            setDailyScheduleDto.slots[i].endTime = new Date
+                body.slots[i].endTime = new Date
                 (
-                    setDailyScheduleDto.dateYear,
-                    setDailyScheduleDto.dateMonth, setDailyScheduleDto.dateDay,
-                    setDailyScheduleDto.slots[i].endTimeHour,
-                    setDailyScheduleDto.slots[i].endTimeMinutes
+                    body.dateYear,
+                    body.dateMonth, body.dateDay,
+                    body.slots[i].endTimeHour,
+                    body.slots[i].endTimeMinutes
                 );
         }
 
-        const newDailySchedule = new this.serviceBookingModel(setDailyScheduleDto);
+        const newDailySchedule = new this.serviceBookingModel(body);
         return await newDailySchedule.save();
     }
 
-    async assignTechnicianToDailySchedule(assignTechnicianToDailyScheduleDto: AssignTechnicianToDailyScheduleDto, request: any): Promise<any> {
+    async assignTechnicianToDailySchedule(body: AssignTechnicianToDailyScheduleDto, request: any): Promise<any> {
 
         const verifyUser = await this.userModel.findOne({
             uuid: request.userId,
@@ -217,42 +227,42 @@ export class BookingService {
                 },
                 {
                     role: UserRoles.corporate,
-                    'corporate.uuid': assignTechnicianToDailyScheduleDto.corporateUuid,
+                    'corporate.uuid': body.corporateUuid,
                     'corporate.role': UserRoles.corporateAdmin,
                 },
                 {
                     role: UserRoles.corporate,
-                    'corporate.uuid': assignTechnicianToDailyScheduleDto.corporateUuid,
-                    'corporate.branch.uuid': assignTechnicianToDailyScheduleDto.branchUuid,
+                    'corporate.uuid': body.corporateUuid,
+                    'corporate.branch.uuid': body.branchUuid,
                     'corporate.branch.role': UserRoles.branchAdmin,
                 }
             ],
         })
         if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-        for (let i = 0; i < assignTechnicianToDailyScheduleDto.techniciansOfTheDay.length; i++) {
+        for (let i = 0; i < body.techniciansOfTheDay.length; i++) {
 
             const findTechnician = await this.userModel.findOne({
-                emailAddress: assignTechnicianToDailyScheduleDto.techniciansOfTheDay[i],
+                emailAddress: body.techniciansOfTheDay[i],
                 'corporate.branch.role': UserRoles.technician,
-                'corporate.uuid': assignTechnicianToDailyScheduleDto.corporateUuid,
-                'corporate.branch.uuid': assignTechnicianToDailyScheduleDto.branchUuid
+                'corporate.uuid': body.corporateUuid,
+                'corporate.branch.uuid': body.branchUuid
             })
 
             if (!findTechnician) throw new BadRequestException('User does not exist');
 
-            assignTechnicianToDailyScheduleDto.techniciansOfTheDay[i] = findTechnician.uuid;
+            body.techniciansOfTheDay[i] = findTechnician.uuid;
         }
 
-        for (let i = 0; i < assignTechnicianToDailyScheduleDto.techniciansOfTheDay.length; i++) {
+        for (let i = 0; i < body.techniciansOfTheDay.length; i++) {
             const findSchedule = await this.serviceBookingModel.findOneAndUpdate(
                 {
-                    uuid: assignTechnicianToDailyScheduleDto.uuid,
-                    corporateUuid: assignTechnicianToDailyScheduleDto.corporateUuid,
-                    branchUuid: assignTechnicianToDailyScheduleDto.branchUuid,
+                    uuid: body.uuid,
+                    corporateUuid: body.corporateUuid,
+                    branchUuid: body.branchUuid,
                 },
                 {
-                    $push: { techniciansOfTheDay: assignTechnicianToDailyScheduleDto.techniciansOfTheDay[i] }
+                    $push: { techniciansOfTheDay: body.techniciansOfTheDay[i] }
                 },
                 {
                     new: true
@@ -263,4 +273,56 @@ export class BookingService {
             return await findSchedule.save();
         }
     }
+
+    // async testCreateUser (body: TestCreateUserDto)
+    // {
+    //     this.logger.log('Creating user...', body);
+    //     const userId = '123';
+
+    //     // this.evenEmitter.emit doesnt stop the code. It will trigger and send to another function with a onEvent Decorator
+    //     this.eventEmitter.emit(
+    //         'user.created',
+    //         new TestCreateUserEvent(userId, body.email)
+    //     )
+
+    //     const establishedWSTimeout = setTimeout
+    //     (
+    //         () => this.establishWebSocketConnection(userId),
+    //         500,
+    //     );
+
+    //     this.schedulerRegistry.addTimeout(
+    //         '$(userId)_establish_ws',
+    //         establishedWSTimeout,
+    //     )
+    // }
+
+    // // This is the place where do send emails to the user and stuff like that. The function which triggered this event will still work without waiting the event to finish.
+    // // And will activate this function on another thread.
+    // @OnEvent('user.created')
+    // welcomeUser(payload: TestCreateUserEvent)
+    // {
+    //     this.logger.log("Welcome new User...", payload.email);
+    // }
+
+    // // This is to ensure that more than one event could be fired at the same time
+    // @OnEvent('user.created', {async: true})
+    // async sendWelcomeGift(payload: TestCreateUserEvent)
+    // {
+    //     this.logger.log("Sending Welcome gift ...", payload.email);
+
+    //     await new Promise<void> ((resolve) => setTimeout(() => resolve(), 3000));
+
+    //     this.logger.log("Welcome gift sent.", payload.email);
+    // }
+
+
+    // private establishWebSocketConnection(userId: string) {
+    //     this.logger.log("Establishing WS connection with user...", userId);
+    // }
+
+    // @Cron(CronExpression.EVERY_10_SECONDS, {name: 'delete_expired_users'})
+    // deleteExpiredUsers() {
+    //     this.logger.log('Delete expired users ...');
+    // }
 }

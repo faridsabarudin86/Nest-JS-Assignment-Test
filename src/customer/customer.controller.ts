@@ -24,32 +24,32 @@ export class CustomerController
 
     @Public()
     @Post('signincustomer')
-    async signInCustomer(@Body() signInDto: SignInDto): Promise<any> 
+    async signInCustomer(@Body() body: SignInDto): Promise<any> 
     {    
-        return this.authService.signInCustomer(signInDto);
+        return this.authService.signInCustomer(body);
     }
 
     @Public()
     @Post('registercustomer')
-    async registerCustomer(@Body() registerCustomerDto: RegisterCustomerDto): Promise<any>
+    async registerCustomer(@Body() body: RegisterCustomerDto): Promise<any>
     {
-        return this.customerService.registerCustomer(registerCustomerDto);
+        return this.customerService.registerCustomer(body);
     }
 
     @UseGuards(JwtAuthGuard)
     @Roles(UserRoles.customer)
     @Get('getcustomer')
-    async getCustomer(@Request() request: any): Promise<any>
+    async getCustomer(@Request() body: any): Promise<any>
     {
-        return this.customerService.getCustomer(request.user);
+        return this.customerService.getCustomer(body.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Roles(UserRoles.customer)
     @Put('updatecustomer')
-    async updateCustomer(@Body() updateCustomerDto: UpdateCustomerDto, @Request() request: any): Promise<any>
+    async updateCustomer(@Body() body: UpdateCustomerDto, @Request() request: any): Promise<any>
     {
-        return this.customerService.updateCustomer(updateCustomerDto, request.user);
+        return this.customerService.updateCustomer(body, request.user);
     }
 
     @UseGuards(JwtAuthGuard)
@@ -63,41 +63,41 @@ export class CustomerController
     @UseGuards(JwtAuthGuard)
     @Roles(UserRoles.customer)
     @Post('addvehicle')
-    async addVehicle(@Body() addVehicleDto: AddVehicleDto, @Request() request: any): Promise<any>
+    async addVehicle(@Body() body: AddVehicleDto, @Request() request: any): Promise<any>
     {
-        return this.customerService.addVehicle(addVehicleDto, request.user);
+        return this.customerService.addVehicle(body, request.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Roles(UserRoles.customer)
     @Put('updatevehicle')
-    async updateVehicle(@Body() updateVehicleDto: UpdateVehicleDto, @Request() request: any): Promise<any>
+    async updateVehicle(@Body() body: UpdateVehicleDto, @Request() request: any): Promise<any>
     {
-        return this.customerService.updateVehicle(updateVehicleDto, request.user);
+        return this.customerService.updateVehicle(body, request.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Roles(UserRoles.customer)
     @Put('removevehicle')
-    async removeVehicle(@Body() deleteVehicleDto: DeleteVehicleDto, @Request() request: any): Promise<any>
+    async removeVehicle(@Body() body: DeleteVehicleDto, @Request() request: any): Promise<any>
     {
-        return this.customerService.removeVehicle(deleteVehicleDto, request.user);
+        return this.customerService.removeVehicle(body, request.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Roles(UserRoles.customer)
     @Put('addalternatedriver')
-    async addAlternateDriver(@Body() addAlternateDriverDto: AddAlternateDriverDto, @Request() request: any): Promise<any>
+    async addAlternateDriver(@Body() body: AddAlternateDriverDto, @Request() request: any): Promise<any>
     {
-        return this.customerService.addAlternateDriver(addAlternateDriverDto, request.user);
+        return this.customerService.addAlternateDriver(body, request.user);
     }
 
     @UseGuards(JwtAuthGuard)
     @Roles(UserRoles.customer)
     @Put('removealternatedriver')
-    async removeAlternateDriver(@Body() removeAlternateDriverDto: RemoveAlternateDriverDto, @Request() request: any): Promise<any>
+    async removeAlternateDriver(@Body() body: RemoveAlternateDriverDto, @Request() request: any): Promise<any>
     {
-        return this.customerService.removeAlternateDriver(removeAlternateDriverDto, request.user);
+        return this.customerService.removeAlternateDriver(body, request.user);
     }
 }
 

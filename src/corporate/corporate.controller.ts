@@ -27,49 +27,49 @@ export class CorporateController {
 
     @Public()
     @Post('signincorporate')
-    async signInCorporate(@Body() signInDto: SignInDto): Promise<any> {
-
-        return this.authService.signInCorporate(signInDto);
+    async signInCorporate(@Body() body: SignInDto): Promise<any> 
+    {
+        return this.authService.signInCorporate(body);
     }
 
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)
     @Get('getallemployees')
-    async getAllEmployees(@Body() getAllEmployeeDto: GetAllEmployeeDto, @Request() request: any): Promise<any>
+    async getAllEmployees(@Body() body: GetAllEmployeeDto, @Request() request: any): Promise<any>
     {
-        return this.corporateService.getAllEmployees(getAllEmployeeDto, request.user);
+        return this.corporateService.getAllEmployees(body, request.user);
     }
 
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)
     @Get('getemployee')
-    async getEmployee(@Body() getEmployeeDto: GetEmployeeDto, @Request() request: any): Promise<any>
+    async getEmployee(@Body() body: GetEmployeeDto, @Request() request: any): Promise<any>
     {
-        return this.corporateService.getEmployee(getEmployeeDto, request.user);
+        return this.corporateService.getEmployee(body, request.user);
     }
     
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)
     @Post('addemployee')
-    async addEmployee(@Body() addEmployeeDto: AddEmployeeDto, @Request() request: any): Promise<any>
+    async addEmployee(@Body() body: AddEmployeeDto, @Request() request: any): Promise<any>
     {
-        return this.corporateService.addEmployee(addEmployeeDto, request.user);
+        return this.corporateService.addEmployee(body, request.user);
     }
 
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)
     @Put('updateemployee')
-    async updateEmployee(@Body() updateEmployeeDto: UpdateEmployeeDto, @Request() request: any): Promise<any>
+    async updateEmployee(@Body() body: UpdateEmployeeDto, @Request() request: any): Promise<any>
     {
-        return this.corporateService.updateEmployee(updateEmployeeDto, request.user);
+        return this.corporateService.updateEmployee(body, request.user);
     }
 
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)
     @Put('updateselfaccount')
-    async updateSelfAccount(@Body() updateSelfAccountDto: UpdateSelfAccountDto, @Request() request: any): Promise <any>
+    async updateSelfAccount(@Body() body: UpdateSelfAccountDto, @Request() request: any): Promise <any>
     {
-        return this.corporateService.updateSelfAccount(updateSelfAccountDto, request.user);
+        return this.corporateService.updateSelfAccount(body, request.user);
     }
 
     // @Roles(UserRoles.superAdmin, UserRoles.corporate)
@@ -83,40 +83,40 @@ export class CorporateController {
     @Roles(UserRoles.superAdmin)
     @UseGuards(JwtAuthGuard)
     @Post('addcorporateadmin')
-    async addCorporateAdmin(@Body() addCorporateAdminDto: AddCorporateAdminDto, @Request() request: any): Promise<any>
+    async addCorporateAdmin(@Body() body: AddCorporateAdminDto, @Request() request: any): Promise<any>
     {
-        return this.corporateService.addCorporateAdmin(addCorporateAdminDto, request.user);
+        return this.corporateService.addCorporateAdmin(body, request.user);
     }
 
     @Roles(UserRoles.superAdmin)
     @UseGuards(JwtAuthGuard)
     @Post('addcorporate')
-    async addCorporate(@Body() addCorporateDto: AddCorporateDto, @Request() request: any): Promise<any>
+    async addCorporate(@Body() body: AddCorporateDto, @Request() request: any): Promise<any>
     {
-        return this.corporateService.addCorporate(addCorporateDto, request.user);
+        return this.corporateService.addCorporate(body, request.user);
     }
 
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)
     @Put('updatecorporate')
-    async updateCorporate(@Body() updateCorporateDto: UpdateCorporateDto, @Request() request: any): Promise<any>
+    async updateCorporate(@Body() body: UpdateCorporateDto, @Request() request: any): Promise<any>
     {
-        return this.corporateService.updateCorporate(updateCorporateDto, request.user)
+        return this.corporateService.updateCorporate(body, request.user)
     }
 
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)
     @Put('updatecorporatebranch')
-    async updateCorporateBranch(@Body() updateCorporateBranchDto: UpdateCorporateBranchDto, @Request() request: any): Promise<any>
+    async updateCorporateBranch(@Body() body: UpdateCorporateBranchDto, @Request() request: any): Promise<any>
     {
-        return this.corporateService.updateCorporateBranch(updateCorporateBranchDto, request.user)
+        return this.corporateService.updateCorporateBranch(body, request.user)
     }
 
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)
     @Post('addbranch')
-    async addBranch(@Body() addBranchDto: AddBranchDto, @Request() request: any): Promise<any>
+    async addBranch(@Body() body: AddBranchDto, @Request() request: any): Promise<any>
     {
-        return this.corporateService.addBranch(addBranchDto, request.user);
+        return this.corporateService.addBranch(body, request.user);
     }
 }

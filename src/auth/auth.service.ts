@@ -17,24 +17,38 @@ export class AuthService
         @InjectModel('User') private readonly userModel: Model<UserDto>,
     ) {}
 
-    async signInCustomer(signInDto: SignInDto): Promise<any> 
+    async signInCustomer(body: SignInDto): Promise<any> 
     {
-        const findUser = await this.userModel.findOne({emailAddress: signInDto.emailAddress, role: UserRoles.customer});
+        const findUser = await this.userModel.findOne
+        ({
+            emailAddress: body.emailAddress, 
+            role: UserRoles.customer
+        });
+
         if (!findUser) throw new UnauthorizedException('User does not exists.');
 
-        const isPasswordMatch = await bcrypt.compare(signInDto.password, findUser.password);
+        const isPasswordMatch = await bcrypt.compare(body.password, findUser.password);
 
         if (isPasswordMatch === false) throw new UnauthorizedException('Credentials did not match');
 
         return this.userSignedIn(findUser.uuid, findUser.emailAddress, findUser.role);
     }
 
-    async signInCorporate(signInDto: SignInDto): Promise<any> 
+    async signInCorporate(body: SignInDto): Promise<any> 
     {
-        const findUser = await this.userModel.findOne({emailAddress: signInDto.emailAddress, $or: [ {role: UserRoles.corporate}, {role: UserRoles.superAdmin}]});
+        const findUser = await this.userModel.findOne
+        ({
+            emailAddress: body.emailAddress, 
+            $or: 
+            [ 
+                {role: UserRoles.corporate}, 
+                {role: UserRoles.superAdmin}
+            ]
+        });
+
         if (!findUser) throw new UnauthorizedException('User does not exists.');
 
-        const isPasswordMatch = await bcrypt.compare(signInDto.password, findUser.password);
+        const isPasswordMatch = await bcrypt.compare(body.password, findUser.password);
 
         if (isPasswordMatch === false) throw new UnauthorizedException('Credentials did not match');
 
@@ -43,7 +57,8 @@ export class AuthService
 
     userSignedIn(userId: string, emailAddress: string, userRole: string) 
     {   
-        return this.jwtService.sign({
+        return this.jwtService.sign
+        ({
             userId: userId,
             userEmailAddress: emailAddress,
             userRole: userRole,

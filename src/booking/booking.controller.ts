@@ -7,6 +7,8 @@ import { SetDailyScheduleDto } from './dtos/setDailySchedule.dto';
 import { AssignTechnicianToDailyScheduleDto } from './dtos/assignedTechnicianToDailySchedule.dto';
 import { AddBookingDto } from './dtos/addBooking.dto';
 import { GetAllBookingCorporateDto } from './dtos/getAllBookingCorporate.dto';
+import { Public } from 'src/common/decorators/public.decorator';
+import { TestCreateUserDto } from './dtos/testCreateUser.dto';
 
 @Controller('booking')
 export class BookingController 
@@ -16,9 +18,9 @@ export class BookingController
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)
     @Get('getallbookingcorporate')
-    async getAllBookingCorporate(@Body() getAllBookingCorporateDto: GetAllBookingCorporateDto, @Request() request: any): Promise<any>
+    async getAllBookingCorporate(@Body() body: GetAllBookingCorporateDto, @Request() request: any): Promise<any>
     {
-        return this.bookingService.getAllBookingCorporate(getAllBookingCorporateDto, request.user);
+        return this.bookingService.getAllBookingCorporate(body, request.user);
     }
 
     @Get()
@@ -30,9 +32,9 @@ export class BookingController
     @Roles(UserRoles.customer)
     @UseGuards(JwtAuthGuard)
     @Put('addbooking')
-    async addBooking(@Body() addBookingDto: AddBookingDto, @Request() request: any): Promise<any>
+    async addBooking(@Body() body: AddBookingDto, @Request() request: any): Promise<any>
     {
-        return this.bookingService.addBooking(addBookingDto, request.user);
+        return this.bookingService.addBooking(body, request.user);
     }
 
     @Put()
@@ -43,15 +45,23 @@ export class BookingController
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)
     @Post('setdailyschedule')
-    async setDailySchedule(@Body() setDailyScheduleDto: SetDailyScheduleDto, @Request() request: any): Promise<any>
+    async setDailySchedule(@Body() body: SetDailyScheduleDto, @Request() request: any): Promise<any>
     {
-        return this.bookingService.setDailySchedule(setDailyScheduleDto, request.user);
+        return this.bookingService.setDailySchedule(body, request.user);
     }
 
     @Roles(UserRoles.superAdmin, UserRoles.corporate)
     @UseGuards(JwtAuthGuard)
     @Post('assigntechniciantodailyschedule')
-    async assignTechnicianToDailySchedule(@Body() assignTechnicianToDailyScheduleDto: AssignTechnicianToDailyScheduleDto, @Request() request: any): Promise<any> {
-        return this.bookingService.assignTechnicianToDailySchedule(assignTechnicianToDailyScheduleDto, request.user);
+    async assignTechnicianToDailySchedule(@Body() body: AssignTechnicianToDailyScheduleDto, @Request() request: any): Promise<any> 
+    {
+        return this.bookingService.assignTechnicianToDailySchedule(body, request.user);
     }
+
+    // @Public()
+    // @Post('testcreateuser')
+    // async testCreateUser(@Body() body: TestCreateUserDto)
+    // {
+    //     return this.bookingService.testCreateUser(body);
+    // }
 }

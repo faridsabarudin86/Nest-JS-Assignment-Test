@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from 'src/auth/auth.module';
 import { CorporateBranchSchema } from 'src/common/schemas/corporate-branch.schema';
 import { CorporateSchema } from 'src/common/schemas/corporate.schema';
@@ -16,7 +18,7 @@ import { BookingService } from './booking.service';
     MongooseModule.forFeature([{name: 'Vehicle', schema: VehicleSchema}]),
     MongooseModule.forFeature([{name: 'Corporate', schema: CorporateSchema}]),
     MongooseModule.forFeature([{name: 'CorporateBranch', schema: CorporateBranchSchema}]),
-    MongooseModule.forFeature([{name: 'ServiceBooking', schema: ServiceBookingSchema}]),
+    MongooseModule.forFeature([{name: 'ServiceBooking', schema: ServiceBookingSchema}]), 
     AuthModule,
   ],
   controllers: [BookingController],
