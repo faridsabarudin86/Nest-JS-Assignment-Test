@@ -1,135 +1,416 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { UserDto } from 'src/auth/dtos/user.dto';
-import { UserRoles } from 'src/config/userRoles';
+import { UserDto } from 'src/common/dtos/user.dto';
+import { UserRoles } from 'src/common/config/userRoles';
 import { v4 as uuid } from 'uuid';
-import { CorporateBranchesDto } from './dtos/corporate-branches.dto';
-import { CorporateDto } from './dtos/corporate.dto';
-import { EditOffDaysDto } from './dtos/edit-off-days.dto';
+import { AddEmployeeDto } from './dtos/addEmployee.dto';
+import { GetAllEmployeeDto } from './dtos/getAllEmployees.dto';
+import { AddCorporateDto } from './dtos/addCorporate.dto';
+import { generate } from 'generate-password';
+import * as bcrypt from 'bcrypt';
+import { CorporateDto } from 'src/common/dtos/corporate.dto';
+import { AddBranchDto } from './dtos/addBranch.dto';
+import { CorporateBranchDto } from 'src/common/dtos/corporate-branch.dto';
+import { AddCorporateAdminDto } from './dtos/addCorporateAdmin.dto';
+import { GetEmployeeDto } from './dtos/getEmployee.dto';
+import { UpdateEmployeeDto } from './dtos/updateEmployee.dto';
+import { UpdateSelfAccountDto } from './dtos/updateSelfAccount.dto';
+import { UpdateCorporateDto } from './dtos/updateCorporate.dto';
+import { DeleteEmployeeDto } from './dtos/deleteEmployee.dto';
+import { UpdateCorporateBranchDto } from './dtos/updateCorporateBranch.dto';
+import { GetBranchesDto } from './dtos/getBranches.dto';
 
 @Injectable()
 export class CorporateService {
-    constructor(
-        @InjectModel('Corporate') private readonly corporateModel: Model<CorporateDto>,
-        @InjectModel('CorporateBranches') private readonly corporateBranchesModel: Model<CorporateBranchesDto>,
-        @InjectModel('User') private readonly userModel: Model<UserDto>,
-        ) {}
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<UserDto>,
+    @InjectModel('Corporate')
+    private readonly corporateModel: Model<CorporateDto>,
+    @InjectModel('CorporateBranch')
+    private readonly corporateBranchModel: Model<CorporateBranchDto>,
+  ) {}
 
-        async createNewCorporate(corporateDto: CorporateDto, response: any): Promise<any> {
+  async getAllBranches(body: GetBranchesDto): Promise<any> {
+    const getBranches = await this.corporateBranchModel.find({
+      corporateUuid: body.corporateUuid,
+    });
 
-            const checkSystemAdmin = await this.userModel.findOne({ uuid: response.userId, userType: UserRoles.systemAdmin })
-            if(!checkSystemAdmin) throw new BadRequestException('User is not authorized');
+    if (!getBranches) throw new BadRequestException('User is not authorized');
 
-            corporateDto.uuid = uuid();
-            
-            const newCorporate = new this.corporateModel(corporateDto);
+    return getBranches;
+  }
 
-            return await newCorporate.save();
-        }
+  async getAllEmployees(body: GetAllEmployeeDto, request: any): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+      $or: [
+        {
+          role: UserRoles.superAdmin,
+        },
+        {
+          role: UserRoles.corporate,
+          'corporate.uuid': body.corporateUuid,
+          'corporate.branch.uuid': body.branchUuid,
+        },
+      ],
+    });
 
-        async createNewCorporateBranch(corporateBranchesDto: CorporateBranchesDto, response: any): Promise<any> {
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-            const checkAdmin = await this.userModel.findOne({ uuid: response.userId, userType: UserRoles.superAdmin, corporateUuid: corporateBranchesDto.corporateUuid });
-            if(!checkAdmin) throw new BadRequestException('User is not authorized');
+    const getEmployees = await this.userModel.find({
+      'corporate.uuid': body.corporateUuid,
+      'corporate.branch.uuid': body.branchUuid,
+    });
 
-            corporateBranchesDto.uuid = uuid();
+    return getEmployees;
+  }
 
-            const newBranch = new this.corporateBranchesModel(corporateBranchesDto);
+  async getEmployee(body: GetEmployeeDto, request: any): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+      $or: [
+        {
+          role: UserRoles.superAdmin,
+        },
+        {
+          role: UserRoles.corporate,
+          'corporate.uuid': body.corporateUuid,
+          'corporate.branch.uuid': body.branchUuid,
+        },
+      ],
+    });
 
-            return await newBranch.save();
-        }
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-        async createNewCorporateSuperUser(userDto: UserDto, response: any): Promise<any> {
+    const getEmployees = await this.userModel.find({
+      uuid: body.uuid,
+      'corporate.uuid': body.corporateUuid,
+      'corporate.branch.uuid': body.branchUuid,
+    });
 
-            const checkSystemAdmin = await this.userModel.findOne({ uuid: response.userId, userType: UserRoles.systemAdmin })
-            if(!checkSystemAdmin) throw new BadRequestException('User is not authorized');
+    return getEmployees;
+  }
 
-            if(userDto.corporateUuid[0] === "" || null) throw new BadRequestException('Corporate uuid cannot be left empty');
+  async addEmployee(body: AddEmployeeDto, request: any): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+      $or: [
+        {
+          role: UserRoles.superAdmin,
+        },
+        {
+          role: UserRoles.corporate,
+          'corporate.uuid': body.corporateUuid,
+          'corporate.role': UserRoles.corporateAdmin,
+        },
+        {
+          role: UserRoles.corporate,
+          'corporate.uuid': body.corporateUuid,
+          'corporate.branch.uuid': body.branchUuid,
+          'corporate.branch.role': UserRoles.branchAdmin,
+        },
+      ],
+    });
 
-            userDto.uuid = uuid();
-            userDto.userType = UserRoles.superAdmin;
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-            const newUser = new this.userModel(userDto);
+    const hash = await bcrypt.hash(body.password, 10);
 
-            return await newUser.save();
-        }
+    body.uuid = uuid();
+    body.password = hash;
+    body.role = UserRoles.corporate;
 
-        async createNewCorporateUser(userDto: UserDto, response: any): Promise<any> {
+    for (let i = 0; i < body.corporate.length; i++) {
+      body.corporate[i].uuid = body.corporateUuid;
+      body.corporate[i].role = UserRoles.employee;
+      body.corporate[i].branch[i].uuid = body.branchUuid;
+    }
 
-            const checkCorporateAdmin = await this.userModel.findOne({ uuid: response.userId, $or: [{userType: UserRoles.admin}, {userType: UserRoles.superAdmin}] })
-            if(!checkCorporateAdmin) throw new BadRequestException('User is not authorized');
+    const newEmployee = new this.userModel(body);
+    return await newEmployee.save();
+  }
 
-            userDto.uuid = uuid();
+  async updateEmployee(body: UpdateEmployeeDto, request: any): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+      $or: [
+        {
+          role: UserRoles.superAdmin,
+        },
+        {
+          role: UserRoles.corporate,
+          'corporate.uuid': body.corporateUuid,
+          'corporate.role': UserRoles.corporateAdmin,
+        },
+        {
+          role: UserRoles.corporate,
+          'corporate.uuid': body.corporateUuid,
+          'corporate.branch.uuid': body.branchUuid,
+          'corporate.branch.role': UserRoles.branchAdmin,
+        },
+      ],
+    });
 
-            switch(userDto.userType) {
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-                case UserRoles.admin:
-                    break;
+    if (body.password !== null || '') {
+      const hash = await bcrypt.hash(body.password, 10);
+      body.password = hash;
+    }
 
-                case UserRoles.technician:
-                    break;
+    const updatedInformation = {
+      emailAddress: body.emailAddress,
+      password: body.password,
+      fullName: body.fullName,
+      phoneNumber: body.phoneNumber,
+    };
 
-                case UserRoles.sales:
-                    break;
+    Object.keys(updatedInformation).forEach((key) => {
+      if (updatedInformation[key] === null || updatedInformation[key] === '') {
+        delete updatedInformation[key];
+      }
+    });
 
-                default:
-                    throw new BadRequestException('Incorrect User Role');
-            }
+    const updateUser = await this.userModel.findOneAndUpdate(
+      {
+        uuid: body.uuid,
+        'corporate.uuid': body.corporateUuid,
+        'corporate.branch.uuid': body.branchUuid,
+      },
+      updatedInformation,
+      { new: true },
+    );
 
-            const newUser = new this.userModel(userDto);
+    return await updateUser.save();
+  }
 
-            return await newUser.save();
-        }
+  async updateSelfAccount(
+    body: UpdateSelfAccountDto,
+    request: any,
+  ): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+    });
 
-        async editOffDays(editOffDaysDto: EditOffDaysDto, response: any): Promise<any> {
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-            const checkCorporateAdmin = await this.userModel.findOne({ uuid: response.userId, $or: [{userType: UserRoles.admin},{userType: UserRoles.superAdmin}], corporateUuid: editOffDaysDto.corporateUuid });
-            if(!checkCorporateAdmin) throw new BadRequestException('User is not authorized');
+    if (body.password !== null || '') {
+      const hash = await bcrypt.hash(body.password, 10);
+      body.password = hash;
+    }
 
+    const updatedInformation = {
+      emailAddress: body.emailAddress,
+      password: body.password,
+      fullName: body.fullName,
+      phoneNumber: body.phoneNumber,
+    };
 
-            // For Checking if the Date exists or not.
-            // const checkOffDays = await this.corporateBranchesModel.findOne({ 
-            //     uuid: editOffDaysDto.corporateBranchUuid, corporateUuid: editOffDaysDto.corporateUuid, 'workingHours.dayOff': editOffDaysDto.workingHours.dayOff } );
-            // if(!checkOffDays) throw new BadRequestException('Off Days already existed');
+    Object.keys(updatedInformation).forEach((key) => {
+      if (updatedInformation[key] === null || updatedInformation[key] === '') {
+        delete updatedInformation[key];
+      }
+    });
 
-            const editOffDays = await this.corporateBranchesModel.findOneAndUpdate( 
-                { uuid: editOffDaysDto.corporateBranchUuid, corporateUuid: editOffDaysDto.corporateUuid }, 
-                { $push: { 'workingHours.dayOff': { $each: editOffDaysDto.workingHours.dayOff } } },
-                { new: true } );
+    const updateUser = await this.userModel.findOneAndUpdate(
+      { uuid: request.userId },
+      updatedInformation,
+      { new: true },
+    );
 
-            if(!editOffDays) throw new BadRequestException('Corporate Branch Not Found');
+    return await updateUser.save();
+  }
 
-            return editOffDays;
-        }
+  async addCorporateAdmin(
+    body: AddCorporateAdminDto,
+    request: any,
+  ): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+      role: UserRoles.superAdmin,
+    });
 
-        async editStartingWorkingHours(corporateBranchesDto: CorporateBranchesDto, response: any): Promise<any> {
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-            const checkCorporateAdmin = await this.userModel.findOne({ uuid: response.userId, $or: [{userType: UserRoles.admin},{userType: UserRoles.superAdmin}], corporateUuid: corporateBranchesDto.corporateUuid });
-            if(!checkCorporateAdmin) throw new BadRequestException('User is not authorized');
+    const hash = await bcrypt.hash(body.password, 10);
 
-            const editStartingWorkingHours = await this.corporateBranchesModel.findOneAndUpdate( 
-                { uuid: corporateBranchesDto.uuid, corporateUuid: corporateBranchesDto.corporateUuid }, 
-                { 'workingHours.startWorkingHours': corporateBranchesDto.workingHours.startWorkingHours },
-                { new: true } );
+    body.uuid = uuid();
+    body.password = hash;
+    body.role = UserRoles.corporate;
 
-            if(!editStartingWorkingHours) throw new BadRequestException('Corporate Branch Not Found');
+    for (let i = 0; i < body.corporate.length; i++) {
+      body.corporate[i].role = UserRoles.corporateAdmin;
+    }
 
-            return editStartingWorkingHours;
-        }
+    const newCorporateAdmin = new this.userModel(body);
+    return await newCorporateAdmin.save();
+  }
 
-        async editEndWorkingHours(corporateBranchesDto: CorporateBranchesDto, response: any): Promise<any> {
+  async addCorporate(body: AddCorporateDto, request: any): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+      role: UserRoles.superAdmin,
+    });
 
-            const checkCorporateAdmin = await this.userModel.findOne({ uuid: response.userId, $or: [{userType: UserRoles.admin},{userType: UserRoles.superAdmin}], corporateUuid: corporateBranchesDto.corporateUuid });
-            if(!checkCorporateAdmin) throw new BadRequestException('User is not authorized');
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-            const editEndWorkingHours = await this.corporateBranchesModel.findOneAndUpdate( 
-                { uuid: corporateBranchesDto.uuid, corporateUuid: corporateBranchesDto.corporateUuid }, 
-                { 'workingHours.endWorkingHours': corporateBranchesDto.workingHours.endWorkingHours },
-                { new: true } );
+    body.uuid = uuid();
 
-            if(!editEndWorkingHours) throw new BadRequestException('Corporate Branch Not Found');
+    const newCorporate = new this.corporateModel(body);
+    return await newCorporate.save();
+  }
 
-            return editEndWorkingHours;
-        }
+  async updateCorporate(body: UpdateCorporateDto, request: any): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+      $or: [
+        {
+          role: UserRoles.superAdmin,
+        },
+        {
+          role: UserRoles.corporate,
+          'corporate.uuid': body.uuid,
+          'corporate.role': UserRoles.corporateAdmin,
+        },
+      ],
+    });
+
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
+
+    const updatedInformation = {
+      emailAddress: body.emailAddress,
+      headquartersAddress: body.headquartersAddress,
+      name: body.name,
+      country: body.country,
+    };
+
+    Object.keys(updatedInformation).forEach((key) => {
+      if (updatedInformation[key] === null || updatedInformation[key] === '') {
+        delete updatedInformation[key];
+      }
+    });
+
+    const updateCorporate = await this.corporateModel.findOneAndUpdate(
+      { uuid: body.uuid },
+      updatedInformation,
+      { new: true },
+    );
+
+    return await updateCorporate.save();
+  }
+
+  async updateCorporateBranch(
+    body: UpdateCorporateBranchDto,
+    request: any,
+  ): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+      $or: [
+        {
+          role: UserRoles.superAdmin,
+        },
+        {
+          role: UserRoles.corporate,
+          'corporate.uuid': body.corporateUuid,
+          'corporate.role': UserRoles.corporateAdmin,
+        },
+        {
+          role: UserRoles.corporate,
+          'corporate.uuid': body.corporateUuid,
+          'corporate.branch.uuid': body.branchUuid,
+          'corporate.branch.role': UserRoles.branchAdmin,
+        },
+      ],
+    });
+
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
+
+    let startWorkingHours = new Date();
+    startWorkingHours.setUTCHours(
+      body.startWorkingHours_Hours,
+      body.startWorkingHours_Minutes,
+    );
+
+    let endWorkingHours = new Date();
+    endWorkingHours.setUTCHours(
+      body.endWorkingHours_Hours,
+      body.endWorkingHours_Minutes,
+    );
+
+    body.startWorkingHours = startWorkingHours;
+    body.endWorkingHours = endWorkingHours;
+
+    const updatedInformation = {
+      emailAddress: body.emailAddress,
+      branchAddress: body.branchAddress,
+      name: body.name,
+      offDays: body.offDays,
+      startWorkingHours: body.startWorkingHours,
+      endWorkingHours: body.endWorkingHours,
+      startWorkingHours_Hours: body.startWorkingHours_Hours,
+      startWorkingHours_Minutes: body.startWorkingHours_Minutes,
+      endWorkingHours_Hours: body.endWorkingHours_Hours,
+      endWorkingHours_Minutes: body.endWorkingHours_Minutes,
+    };
+
+    const objKeys = Object.keys(updatedInformation);
+    objKeys.forEach((key) => {
+      if (
+        updatedInformation.startWorkingHours_Hours === null ||
+        updatedInformation.startWorkingHours_Minutes === null ||
+        updatedInformation.endWorkingHours_Hours === null ||
+        updatedInformation.endWorkingHours_Minutes === null
+      ) {
+        delete updatedInformation.startWorkingHours;
+        delete updatedInformation.endWorkingHours;
+      }
+
+      if (
+        updatedInformation.startWorkingHours === undefined &&
+        updatedInformation.endWorkingHours === undefined &&
+        (updatedInformation[key] === null || updatedInformation[key] === '')
+      ) {
+        delete updatedInformation[key];
+      }
+    });
+
+    const updateCorporateBranch =
+      await this.corporateBranchModel.findOneAndUpdate(
+        { uuid: body.branchUuid, corporateUuid: body.corporateUuid },
+        updatedInformation,
+        { new: true },
+      );
+
+    return await updateCorporateBranch.save();
+  }
+
+  async addBranch(body: AddBranchDto, request: any): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+      $or: [
+        {
+          role: UserRoles.corporate,
+          'corporate.uuid': body.corporateUuid,
+          'corporate.role': UserRoles.corporateAdmin,
+        },
+        {
+          role: UserRoles.corporate,
+          'corporate.uuid': body.corporateUuid,
+          'corporate.branch.uuid': body.branchUuid,
+          'corporate.branch.role': UserRoles.branchAdmin,
+        },
+        {
+          role: UserRoles.superAdmin,
+        },
+      ],
+    });
+
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
+
+    body.uuid = uuid();
+
+    const newCorporateBranch = new this.corporateBranchModel(body);
+    return await newCorporateBranch.save();
+  }
 }

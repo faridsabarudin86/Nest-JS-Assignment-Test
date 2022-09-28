@@ -1,21 +1,27 @@
 import { Module } from '@nestjs/common';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from 'src/auth/auth.module';
-import { UserSchema } from 'src/auth/schemas/user.schema';
-import { CorporateBranchesSchema } from 'src/corporate/schemas/corporate-branches.schema';
-import { CorporateSchema } from 'src/corporate/schemas/corporate.schema';
-import { CustomerVehicleSchema } from 'src/customer/schemas/customer-vehicle.schema';
+import { CorporateBranchSchema } from 'src/common/schemas/corporate-branch.schema';
+import { CorporateSchema } from 'src/common/schemas/corporate.schema';
+import { ServiceBookingSchema } from 'src/common/schemas/service-booking.schema';
+import { UserSchema } from 'src/common/schemas/user.schema';
+import { VehicleSchema } from 'src/common/schemas/vehicle.schema';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
-import { ServiceBookingScheduleSchema } from './schemas/service-booking-schedule.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{name: 'Corporate', schema: CorporateSchema}]),
-    MongooseModule.forFeature([{name: 'CorporateBranches', schema: CorporateBranchesSchema}]),
-    MongooseModule.forFeature([{name: 'User', schema: UserSchema}]),
-    MongooseModule.forFeature([{name: 'CustomerVehicle', schema: CustomerVehicleSchema}]),
-    MongooseModule.forFeature([{name: 'ServiceBookingSchedule', schema: ServiceBookingScheduleSchema}]),
+    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: 'Vehicle', schema: VehicleSchema }]),
+    MongooseModule.forFeature([{ name: 'Corporate', schema: CorporateSchema }]),
+    MongooseModule.forFeature([
+      { name: 'CorporateBranch', schema: CorporateBranchSchema },
+    ]),
+    MongooseModule.forFeature([
+      { name: 'ServiceBooking', schema: ServiceBookingSchema },
+    ]),
     AuthModule,
   ],
   controllers: [BookingController],
