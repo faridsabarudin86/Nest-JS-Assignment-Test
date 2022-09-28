@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from 'src/auth/auth.module';
+import { BookingModule } from 'src/booking/booking.module';
 import { CorporateBranchSchema } from 'src/common/schemas/corporate-branch.schema';
 import { CorporateSchema } from 'src/common/schemas/corporate.schema';
 import { UserSchema } from 'src/common/schemas/user.schema';
@@ -12,6 +13,7 @@ import { CustomerService } from './customer.service';
   imports: [
     MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
     MongooseModule.forFeature([{ name: 'Vehicle', schema: VehicleSchema }]),
+    BookingModule,
     AuthModule,
   ],
   controllers: [CustomerController],
