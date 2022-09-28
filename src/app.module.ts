@@ -12,26 +12,29 @@ import { CustomerModule } from './customer/customer.module';
 import { BookingModule } from './booking/booking.module';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { ScheduleModule } from '@nestjs/schedule';
+import { SuperuserController } from './superuser/superuser.controller';
+import { SuperuserModule } from './superuser/superuser.module';
 
 @Module({
   imports: [
     EventEmitterModule.forRoot(),
-    ScheduleModule.forRoot(), 
-    MongooseModule.forRoot(config.mongoURI), 
-    AuthModule, 
-    CorporateModule, 
-    CustomerModule, 
-    BookingModule
+    ScheduleModule.forRoot(),
+    MongooseModule.forRoot(config.mongoURI),
+    AuthModule,
+    CorporateModule,
+    CustomerModule,
+    BookingModule,
+    SuperuserModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, SuperuserController],
   providers: [
-    AppService, 
+    AppService,
     {
       provide: APP_GUARD,
       useClass: RolesGuard,
     },
     {
-      provide: APP_GUARD, 
+      provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
   ],

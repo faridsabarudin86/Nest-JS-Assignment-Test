@@ -4,8 +4,8 @@ import { AuthModule } from 'src/auth/auth.module';
 import { CorporateBranchSchema } from 'src/common/schemas/corporate-branch.schema';
 import { CorporateSchema } from 'src/common/schemas/corporate.schema';
 import { UserSchema } from 'src/common/schemas/user.schema';
-import { CorporateController } from './corporate.controller';
-import { CorporateService } from './corporate.service';
+import { SuperuserController } from './superuser.controller';
+import { SuperuserService } from './superuser.service';
 
 @Module({
   imports: [
@@ -16,8 +16,8 @@ import { CorporateService } from './corporate.service';
     ]),
     AuthModule,
   ],
-  controllers: [CorporateController],
-  providers: [CorporateService],
-  exports: [CorporateService],
+  providers: [SuperuserService],
+  controllers: [SuperuserController],
+  exports: [SuperuserService],
 })
-export class CorporateModule {}
+export class SuperuserModule {}

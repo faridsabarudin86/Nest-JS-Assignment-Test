@@ -11,19 +11,21 @@ import { VehicleSchema } from 'src/common/schemas/vehicle.schema';
 import { BookingController } from './booking.controller';
 import { BookingService } from './booking.service';
 
-@Module
-({
-    imports: [
-    MongooseModule.forFeature([{name: 'User', schema: UserSchema}]),
-    MongooseModule.forFeature([{name: 'Vehicle', schema: VehicleSchema}]),
-    MongooseModule.forFeature([{name: 'Corporate', schema: CorporateSchema}]),
-    MongooseModule.forFeature([{name: 'CorporateBranch', schema: CorporateBranchSchema}]),
-    MongooseModule.forFeature([{name: 'ServiceBooking', schema: ServiceBookingSchema}]), 
+@Module({
+  imports: [
+    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: 'Vehicle', schema: VehicleSchema }]),
+    MongooseModule.forFeature([{ name: 'Corporate', schema: CorporateSchema }]),
+    MongooseModule.forFeature([
+      { name: 'CorporateBranch', schema: CorporateBranchSchema },
+    ]),
+    MongooseModule.forFeature([
+      { name: 'ServiceBooking', schema: ServiceBookingSchema },
+    ]),
     AuthModule,
   ],
   controllers: [BookingController],
   providers: [BookingService],
   exports: [BookingService],
 })
-export class BookingModule 
-{}
+export class BookingModule {}

@@ -16,225 +16,213 @@ import { RemoveAlternateDriverDto } from './dtos/removeAlternateDriver.dto';
 
 @Injectable()
 export class CustomerService {
-    constructor
-    (
-        @InjectModel('User') private readonly userModel: Model<UserDto>,
-        @InjectModel('Vehicle') private readonly vehicleModel: Model<VehicleDto>,
-    ) { }
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<UserDto>,
+    @InjectModel('Vehicle') private readonly vehicleModel: Model<VehicleDto>,
+  ) {}
 
-    async registerCustomer(body: RegisterCustomerDto): Promise<any> 
-    {
-        const hash = await bcrypt.hash(body.password, 10);
+  async registerCustomer(body: RegisterCustomerDto): Promise<any> {
+    const hash = await bcrypt.hash(body.password, 10);
 
-        body.uuid = uuid();
-        body.password = hash;
-        body.role = UserRoles.customer;
+    body.uuid = uuid();
+    body.password = hash;
+    body.role = UserRoles.customer;
 
-        const registerUser = new this.userModel(body);
+    const registerUser = new this.userModel(body);
 
-        return registerUser.save();
+    return registerUser.save();
+  }
+
+  async getCustomer(request: any): Promise<any> {
+    const findUser = await this.userModel.findOne({
+      uuid: request.userId,
+      role: UserRoles.customer,
+    });
+
+    if (!findUser) throw new BadRequestException('User doesnt exists or Authorized');
+
+    return findUser;
+  }
+
+  async updateCustomer(body: UpdateCustomerDto, request: any): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+      role: UserRoles.customer,
+    });
+
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
+
+    if (body.password !== null || '') {
+      const hash = await bcrypt.hash(body.password, 10);
+      body.password = hash;
     }
 
-    async getCustomer(request: any): Promise<any> 
-    {
-        const findUser = await this.userModel.findOne({ uuid: request.userId, role: UserRoles.customer })
-        if (!findUser) throw new BadRequestException('User is not authorized');
+    const updatedInformation = {
+      emailAddress: body.emailAddress,
+      password: body.password,
+      fullName: body.fullName,
+      phoneNumber: body.phoneNumber,
+    };
 
-        return findUser;
+    Object.keys(updatedInformation).forEach((key) => {
+      if (updatedInformation[key] === null || updatedInformation[key] === '') {
+        delete updatedInformation[key];
+      }
+    });
+
+    const updateUser = await this.userModel.findOneAndUpdate(
+      { uuid: request.userId },
+      updatedInformation,
+      { new: true },
+    );
+
+    return await updateUser.save();
+  }
+
+  async getCustomerVehicles(request: any): Promise<any> {
+    const findVehicles = await this.vehicleModel.find({
+      ownerUuid: request.userId,
+    });
+    
+    if (!findVehicles) throw new BadRequestException('No Vehicles Found');
+
+    return findVehicles;
+  }
+
+  async addVehicle(body: AddVehicleDto, request: any): Promise<any> {
+    const verifyUser = await this.userModel.findOne({
+      uuid: request.userId,
+      role: UserRoles.customer,
+    });
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
+
+    const checkUserVehicleList = await this.vehicleModel.findOne({
+      ownerUuid: request.userId,
+    });
+
+    if (!checkUserVehicleList) {
+      body.uuid = uuid();
+      body.ownerUuid = request.userId;
+
+      for (let i = 0; i < body.information.length; i++) {
+        body.information[i].uuid = uuid();
+      }
+
+      const addVehicle = new this.vehicleModel(body);
+
+      return await addVehicle.save();
+    } else {
+      for (let i = 0; i < body.information.length; i++) {
+        const updatedInformation = {
+          uuid: uuid(),
+          brand: body.information[i].brand,
+          model: body.information[i].model,
+          type: body.information[i].type,
+          colour: body.information[i].colour,
+          plateNumber: body.information[i].plateNumber,
+          chassisNumber: body.information[i].chassisNumber,
+        };
+
+        const addNewVehicle = await this.vehicleModel.findOneAndUpdate(
+          { ownerUuid: request.userId },
+          { $push: { information: updatedInformation } },
+          { new: true },
+        );
+
+        return await addNewVehicle.save();
+      }
     }
+  }
 
-    // Add validation, user cannot change email address to an email address that already assigned
-    async updateCustomer(body: UpdateCustomerDto, request: any): Promise<any> 
-    {
-        const verifyUser = await this.userModel.findOne({ uuid: request.userId, role: UserRoles.customer })
-        if (!verifyUser) throw new BadRequestException('User is not authorized');
+  async updateVehicle(body: UpdateVehicleDto, request: any): Promise<any> {
+    const verifyUser = await this.vehicleModel.findOne({
+      ownerUuid: request.userId,
+      'information.uuid': body.uuid,
+    });
 
-        if (body.password !== null || '') 
-        {
-            const hash = await bcrypt.hash(body.password, 10);
-            body.password = hash;
-        }
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-        const updatedInformation =
-        {
-            emailAddress: body.emailAddress,
-            password: body.password,
-            fullName: body.fullName,
-            phoneNumber: body.phoneNumber,
-        }
+    const updatedInformation = {
+      'information.$.colour': body.colour,
+      'information.$.plateNumber': body.plateNumber,
+      'infromation.$.chassisNumber': body.chassisNumber,
+    };
 
-        Object.keys(updatedInformation).forEach
-            (key => 
-            {
-                if (updatedInformation[key] === null || updatedInformation[key] === '') 
-                {
-                    delete updatedInformation[key];
-                }
-            });
+    Object.keys(updatedInformation).forEach((key) => {
+      if (updatedInformation[key] === null || updatedInformation[key] === '') {
+        delete updatedInformation[key];
+      }
+    });
 
-        const updateUser = await this.userModel.findOneAndUpdate
-            (
-                { uuid: request.userId },
-                updatedInformation,
-                { new: true },
-            )
+    const updateVehicle = await this.vehicleModel.findOneAndUpdate(
+      { ownerUuid: request.userId, 'information.uuid': body.uuid },
+      updatedInformation,
+      { new: true },
+    );
 
-        return await updateUser.save();
-    }
+    return await updateVehicle.save();
+  }
 
-    async getCustomerVehicles(request: any): Promise<any> 
-    {
-        const findVehicles = await this.vehicleModel.find({ ownerUuid: request.userId });
-        if (!findVehicles) throw new BadRequestException('No Vehicles Found');
+  async removeVehicle(body: DeleteVehicleDto, request: any): Promise<any> {
+    const verifyUser = await this.vehicleModel.findOne({
+      ownerUuid: request.userId,
+      'information.uuid': body.uuid,
+    });
 
-        return findVehicles;
-    }
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-    // Validation needs to be added, check the plateNumber. Wont insert if plateNumber exists.
-    async addVehicle(body: AddVehicleDto, request: any): Promise<any> 
-    {
-        const verifyUser = await this.userModel.findOne({ uuid: request.userId, role: UserRoles.customer });
-        if (!verifyUser) throw new BadRequestException('User is not authorized');
+    const deleteVehicle = await this.vehicleModel.findOneAndUpdate(
+      { ownerUuid: request.userId },
+      { $pull: { information: { uuid: body.uuid } } },
+      { new: true },
+    );
 
-        const checkUserVehicleList = await this.vehicleModel.findOne({ ownerUuid: request.userId });
+    return await deleteVehicle.save();
+  }
 
-        if (!checkUserVehicleList) 
-        {
-            body.uuid = uuid();
-            body.ownerUuid = request.userId;
+  async addAlternateDriver(
+    body: AddAlternateDriverDto,
+    request: any,
+  ): Promise<any> {
+    const verifyUser = await this.vehicleModel.findOne({
+      ownerUuid: request.userId,
+      'information.uuid': body.uuid,
+    });
 
-            for (let i = 0; i < body.information.length; i++) 
-            {
-                body.information[i].uuid = uuid();
-            }
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-            const addVehicle = new this.vehicleModel(body);
+    const findAlternateUser = await this.userModel.findOne({
+      emailAddress: body.email,
+    });
+    if (!findAlternateUser)
+      throw new BadRequestException('No User Exist with that Email Address');
 
-            return await addVehicle.save();
-        }
-        else 
-        {
-            for (let i = 0; i < body.information.length; i++) 
-            {
-                const updatedInformation =
-                {
-                    uuid: uuid(),
-                    brand: body.information[i].brand,
-                    model: body.information[i].model,
-                    type: body.information[i].type,
-                    colour: body.information[i].colour,
-                    plateNumber: body.information[i].plateNumber,
-                    chassisNumber: body.information[i].chassisNumber,
-                }
+    const addDriver = await this.vehicleModel.findOneAndUpdate(
+      { ownerUuid: request.userId, 'information.uuid': body.uuid },
+      { $push: { 'information.$.alternateDrivers': findAlternateUser.uuid } },
+      { new: true },
+    );
 
-                const addNewVehicle = await this.vehicleModel.findOneAndUpdate
-                    (
-                        { ownerUuid: request.userId },
-                        { $push: { information: updatedInformation } },
-                        { new: true },
-                    );
+    return await addDriver.save();
+  }
 
-                return await addNewVehicle.save();
-            }
-        }
-    }
+  async removeAlternateDriver(
+    body: RemoveAlternateDriverDto,
+    request: any,
+  ): Promise<any> {
+    const verifyUser = await this.vehicleModel.findOne({
+      ownerUuid: request.userId,
+      'information.uuid': body.uuid,
+    });
 
-    async updateVehicle(body: UpdateVehicleDto, request: any): Promise<any> 
-    {
-        const verifyUser = await this.vehicleModel.findOne
-            ({
-                ownerUuid: request.userId,
-                'information.uuid': body.uuid,
-            });
+    if (!verifyUser) throw new BadRequestException('User is not authorized');
 
-        if (!verifyUser) throw new BadRequestException('User is not authorized');
+    const removeDriver = await this.vehicleModel.findOneAndUpdate(
+      { ownerUuid: request.userId, 'information.uuid': body.uuid },
+      { $pull: { 'information.$.alternateDrivers': body.customerUuid } },
+      { new: true },
+    );
 
-        const updatedInformation =
-        {
-            'information.$.colour': body.colour,
-            'information.$.plateNumber': body.plateNumber,
-            'infromation.$.chassisNumber': body.chassisNumber,
-        }
-
-        Object.keys(updatedInformation).forEach
-            (key => 
-            {
-                if (updatedInformation[key] === null || updatedInformation[key] === '') 
-                {
-                    delete updatedInformation[key];
-                }
-            });
-
-        const updateVehicle = await this.vehicleModel.findOneAndUpdate
-            (
-                { ownerUuid: request.userId, 'information.uuid': body.uuid },
-                updatedInformation,
-                { new: true }
-            );
-
-        return await updateVehicle.save();
-    }
-
-    async removeVehicle(body: DeleteVehicleDto, request: any): Promise<any> 
-    {
-        const verifyUser = await this.vehicleModel.findOne
-            ({
-                ownerUuid: request.userId,
-                'information.uuid': body.uuid,
-            });
-
-        if (!verifyUser) throw new BadRequestException('User is not authorized');
-
-        const deleteVehicle = await this.vehicleModel.findOneAndUpdate
-            (
-                { ownerUuid: request.userId },
-                { $pull: { information: { uuid: body.uuid } } },
-                { new: true },
-            )
-
-        return await deleteVehicle.save();
-    }
-
-    async addAlternateDriver(body: AddAlternateDriverDto, request: any): Promise<any> 
-    {
-        const verifyUser = await this.vehicleModel.findOne
-            ({
-                ownerUuid: request.userId,
-                'information.uuid': body.uuid,
-            });
-
-        if (!verifyUser) throw new BadRequestException('User is not authorized');
-
-        const findAlternateUser = await this.userModel.findOne({ emailAddress: body.email })
-        if (!findAlternateUser) throw new BadRequestException('No User Exist with that Email Address');
-
-        const addDriver = await this.vehicleModel.findOneAndUpdate
-            (
-                { ownerUuid: request.userId, 'information.uuid': body.uuid },
-                { $push: { 'information.$.alternateDrivers': findAlternateUser.uuid } },
-                { new: true },
-            )
-
-        return await addDriver.save();
-    }
-
-    async removeAlternateDriver(body: RemoveAlternateDriverDto, request: any): Promise<any> 
-    {
-        const verifyUser = await this.vehicleModel.findOne
-            ({
-                ownerUuid: request.userId,
-                'information.uuid': body.uuid,
-            });
-
-        if (!verifyUser) throw new BadRequestException('User is not authorized');
-
-        const removeDriver = await this.vehicleModel.findOneAndUpdate
-            (
-                { ownerUuid: request.userId, 'information.uuid': body.uuid },
-                { $pull: { 'information.$.alternateDrivers': body.customerUuid } },
-                { new: true },
-            )
-
-        return await removeDriver.save();
-    }
+    return await removeDriver.save();
+  }
 }

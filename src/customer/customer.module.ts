@@ -9,10 +9,9 @@ import { CustomerController } from './customer.controller';
 import { CustomerService } from './customer.service';
 
 @Module({
-  imports: 
-  [
-    MongooseModule.forFeature([{name: 'User', schema: UserSchema}]),
-    MongooseModule.forFeature([{name: 'Vehicle', schema: VehicleSchema}]),
+  imports: [
+    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+    MongooseModule.forFeature([{ name: 'Vehicle', schema: VehicleSchema }]),
     AuthModule,
   ],
   controllers: [CustomerController],

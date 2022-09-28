@@ -7,27 +7,20 @@ import config from 'src/common/config/defaults';
 import { JwtStrategy } from '../common/strategies/jwt.strategy';
 import { UserSchema } from 'src/common/schemas/user.schema';
 
-@Module
-({
-  imports: 
-  [
-    MongooseModule.forFeature
-    ([
-      {name: 'User', schema: UserSchema}
-    ]),
-    
-    JwtModule.register
-    ({
+@Module({
+  imports: [
+    MongooseModule.forFeature([{ name: 'User', schema: UserSchema }]),
+
+    JwtModule.register({
       secret: config.jwtSecretKey,
     }),
 
     JwtStrategy,
     JwtService,
-],
+  ],
 
-controllers: [AuthController],
-providers: [AuthService],
-exports: [AuthService],
+  controllers: [AuthController],
+  providers: [AuthService],
+  exports: [AuthService],
 })
-
 export class AuthModule {}
