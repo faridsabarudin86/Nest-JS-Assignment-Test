@@ -3,8 +3,6 @@ import { IsArray, IsEmail, IsNotEmpty, IsObject, IsPhoneNumber, IsString, IsUUID
 
 class CorporateProperties
 {
-    @IsNotEmpty()
-    @IsUUID(4)
     uuid: string;
 
     role: string;

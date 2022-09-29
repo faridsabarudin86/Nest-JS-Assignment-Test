@@ -24,14 +24,6 @@ class CorporateProperties
 export class AddEmployeeDto 
 {
     uuid: string;
-    
-    @IsNotEmpty()
-    @IsUUID(4)
-    corporateUuid: string;
-
-    @IsNotEmpty()
-    @IsUUID(4)
-    branchUuid: string;
 
     @IsNotEmpty()
     @IsEmail()

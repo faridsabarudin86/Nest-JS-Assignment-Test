@@ -2,10 +2,6 @@ import { IsDefined, IsEmail, IsNotEmpty, IsOptional, IsString, IsUUID } from "cl
 
 export class UpdateCorporateDto 
 {
-    @IsNotEmpty()
-    @IsUUID(4)
-    uuid: string;
-
     @IsOptional()
     @IsString()
     name: string;

@@ -2,14 +2,6 @@ import { IsArray, IsDefined, IsEmail, IsNotEmpty, IsNumber, IsOptional, IsString
 
 export class UpdateCorporateBranchDto 
 {
-    @IsNotEmpty()
-    @IsUUID(4)
-    corporateUuid: string;
-
-    @IsNotEmpty()
-    @IsUUID(4)
-    branchUuid: string;
-
     @IsOptional()
     @IsString()
     name: string;
