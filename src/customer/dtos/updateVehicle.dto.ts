@@ -3,11 +3,6 @@ import { IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, IsUUID, Valid
 
 export class UpdateVehicleDto
 {
-
-    @IsNotEmpty()
-    @IsUUID(4)
-    uuid: string;
-
     @IsOptional()
     @IsString()
     colour: string;

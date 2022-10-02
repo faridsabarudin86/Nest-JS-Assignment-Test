@@ -10,9 +10,7 @@ import { v4 as uuid } from 'uuid';
 import { UserRoles } from 'src/common/config/userRoles';
 import { AddVehicleDto } from './dtos/addVehicle.dto';
 import { UpdateVehicleDto } from './dtos/updateVehicle.dto';
-import { DeleteVehicleDto } from './dtos/deleteVehicle.dto';
 import { AddAlternateDriverDto } from './dtos/addAlternateDriver.dto';
-import { RemoveAlternateDriverDto } from './dtos/removeAlternateDriver.dto';
 
 @Injectable()
 export class CustomerService {
@@ -38,8 +36,8 @@ export class CustomerService {
       uuid: request.userId,
       role: UserRoles.customer,
     });
-
-    if (!findUser) throw new BadRequestException('User doesnt exists or Authorized');
+    if (!findUser)
+      throw new BadRequestException('User doesnt exists or Authorized');
 
     return findUser;
   }
@@ -49,7 +47,6 @@ export class CustomerService {
       uuid: request.userId,
       role: UserRoles.customer,
     });
-
     if (!verifyUser) throw new BadRequestException('User is not authorized');
 
     if (body.password !== null || '') {
@@ -83,7 +80,6 @@ export class CustomerService {
     const findVehicles = await this.vehicleModel.find({
       ownerUuid: request.userId,
     });
-    
     if (!findVehicles) throw new BadRequestException('No Vehicles Found');
 
     return findVehicles;
@@ -134,10 +130,25 @@ export class CustomerService {
     }
   }
 
-  async updateVehicle(body: UpdateVehicleDto, request: any): Promise<any> {
+  async getVehicleInfo(paramVehicleId: string, request: any): Promise<any> {
+    const findVehicles = await this.vehicleModel.findOne(
+      { ownerUuid: request.userId },
+      { information: { $elemMatch: { uuid: paramVehicleId } } },
+    );
+
+    if (!findVehicles) throw new BadRequestException('No Vehicles Found');
+
+    return findVehicles;
+  }
+
+  async updateVehicle(
+    paramVehicleId: string,
+    body: UpdateVehicleDto,
+    request: any,
+  ): Promise<any> {
     const verifyUser = await this.vehicleModel.findOne({
       ownerUuid: request.userId,
-      'information.uuid': body.uuid,
+      'information.uuid': paramVehicleId,
     });
 
     if (!verifyUser) throw new BadRequestException('User is not authorized');
@@ -155,7 +166,7 @@ export class CustomerService {
     });
 
     const updateVehicle = await this.vehicleModel.findOneAndUpdate(
-      { ownerUuid: request.userId, 'information.uuid': body.uuid },
+      { ownerUuid: request.userId, 'information.uuid': paramVehicleId },
       updatedInformation,
       { new: true },
     );
@@ -163,17 +174,16 @@ export class CustomerService {
     return await updateVehicle.save();
   }
 
-  async removeVehicle(body: DeleteVehicleDto, request: any): Promise<any> {
+  async removeVehicle(paramVehicleId: string, request: any): Promise<any> {
     const verifyUser = await this.vehicleModel.findOne({
       ownerUuid: request.userId,
-      'information.uuid': body.uuid,
+      'information.uuid': paramVehicleId,
     });
-
     if (!verifyUser) throw new BadRequestException('User is not authorized');
 
     const deleteVehicle = await this.vehicleModel.findOneAndUpdate(
       { ownerUuid: request.userId },
-      { $pull: { information: { uuid: body.uuid } } },
+      { $pull: { information: { uuid: paramVehicleId } } },
       { new: true },
     );
 
@@ -181,14 +191,14 @@ export class CustomerService {
   }
 
   async addAlternateDriver(
+    paramVehicleId: string,
     body: AddAlternateDriverDto,
     request: any,
   ): Promise<any> {
     const verifyUser = await this.vehicleModel.findOne({
       ownerUuid: request.userId,
-      'information.uuid': body.uuid,
+      'information.uuid': paramVehicleId,
     });
-
     if (!verifyUser) throw new BadRequestException('User is not authorized');
 
     const findAlternateUser = await this.userModel.findOne({
@@ -198,7 +208,7 @@ export class CustomerService {
       throw new BadRequestException('No User Exist with that Email Address');
 
     const addDriver = await this.vehicleModel.findOneAndUpdate(
-      { ownerUuid: request.userId, 'information.uuid': body.uuid },
+      { ownerUuid: request.userId, 'information.uuid': paramVehicleId },
       { $push: { 'information.$.alternateDrivers': findAlternateUser.uuid } },
       { new: true },
     );
@@ -207,19 +217,19 @@ export class CustomerService {
   }
 
   async removeAlternateDriver(
-    body: RemoveAlternateDriverDto,
+    paramVehicleId: string,
+    paramAlternateDriverId: string,
     request: any,
   ): Promise<any> {
     const verifyUser = await this.vehicleModel.findOne({
       ownerUuid: request.userId,
-      'information.uuid': body.uuid,
+      'information.uuid': paramVehicleId,
     });
-
     if (!verifyUser) throw new BadRequestException('User is not authorized');
 
     const removeDriver = await this.vehicleModel.findOneAndUpdate(
-      { ownerUuid: request.userId, 'information.uuid': body.uuid },
-      { $pull: { 'information.$.alternateDrivers': body.customerUuid } },
+      { ownerUuid: request.userId, 'information.uuid': paramVehicleId },
+      { $pull: { 'information.$.alternateDrivers': paramAlternateDriverId } },
       { new: true },
     );
 

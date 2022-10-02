@@ -29,7 +29,7 @@ export class CorporateService {
     private readonly corporateBranchModel: Model<CorporateBranchDto>,
   ) {}
 
-  async getAllEmployees(
+  async getBranchEmployees(
     paramCorporateId: string,
     paramBranchId: string,
     request: any,

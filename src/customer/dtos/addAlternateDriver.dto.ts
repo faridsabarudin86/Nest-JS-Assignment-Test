@@ -4,10 +4,6 @@ import { IsEmail, IsNotEmpty, IsOptional, IsPhoneNumber, IsString, IsUUID, Valid
 export class AddAlternateDriverDto
 {
     @IsNotEmpty()
-    @IsUUID(4)
-    uuid: string;
-
-    @IsNotEmpty()
     @IsEmail()
     email: string;
 }

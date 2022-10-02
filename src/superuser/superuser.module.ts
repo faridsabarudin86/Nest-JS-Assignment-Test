@@ -23,4 +23,4 @@ import { SuperuserService } from './superuser.service';
   controllers: [SuperuserController],
   exports: [SuperuserService],
 })
-export class SuperuserModule {}
+export class SuperuserModule { }

@@ -5,10 +5,6 @@ export class AddBookingDto
 {
     @IsUUID()
     @IsNotEmpty()
-    uuid: string;
-
-    @IsUUID()
-    @IsNotEmpty()
     vehicleUuid: string;
 
     @IsUUID()
@@ -22,10 +18,6 @@ export class AddBookingDto
     @IsUUID()
     @IsNotEmpty()
     branchUuid: string;
-    
-    @IsUUID()
-    @IsNotEmpty()
-    slotsUuid: string;
 
     @IsArray()
     @ArrayMinSize(1)

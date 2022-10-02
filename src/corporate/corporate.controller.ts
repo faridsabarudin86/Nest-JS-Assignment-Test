@@ -9,6 +9,7 @@ import {
   Delete,
   Param,
   Patch,
+  Query,
 } from '@nestjs/common';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
@@ -27,12 +28,16 @@ import { UpdateCorporateBranchDto } from './dtos/updateCorporateBranch.dto';
 import { AuthService } from 'src/auth/auth.service';
 import { Public } from 'src/common/decorators/public.decorator';
 import { SignInDto } from 'src/auth/dtos/sign-in.dto';
+import { BookingService } from 'src/booking/booking.service';
+import { AssignTechnicianToDailyScheduleDto } from 'src/booking/dtos/assignedTechnicianToDailySchedule.dto';
+import { SetDailyScheduleDto } from 'src/booking/dtos/setDailySchedule.dto';
 
 @Controller('corporate')
 export class CorporateController {
   constructor(
     private corporateService: CorporateService,
     private authService: AuthService,
+    private bookingService: BookingService,
   ) {}
 
   @Public()
@@ -44,12 +49,12 @@ export class CorporateController {
   @Roles(UserRoles.superAdmin, UserRoles.corporate)
   @UseGuards(JwtAuthGuard)
   @Get(':corporateId/:branchId/employee')
-  async getAllEmployees(
+  async getBranchEmployees(
     @Param('corporateId') paramCorporateId: string,
     @Param('branchId') paramBranchId: string,
     @Request() request: any,
   ): Promise<any> {
-    return this.corporateService.getAllEmployees(
+    return this.corporateService.getBranchEmployees(
       paramCorporateId,
       paramBranchId,
       request.user,
@@ -58,7 +63,7 @@ export class CorporateController {
 
   @Roles(UserRoles.superAdmin, UserRoles.corporate)
   @UseGuards(JwtAuthGuard)
-  @Get(':corporateId/:branchId/employee/employeeinfo/:employeeId')
+  @Get(':corporateId/:branchId/employee/:employeeId')
   async getEmployeeInfo(
     @Param('corporateId') paramCorporateId: string,
     @Param('branchId') paramBranchId: string,
@@ -92,7 +97,7 @@ export class CorporateController {
 
   @Roles(UserRoles.superAdmin, UserRoles.corporate)
   @UseGuards(JwtAuthGuard)
-  @Put(':corporateId/:branchId/employee/employeeinfo/:employeeId')
+  @Put(':corporateId/:branchId/employee/:employeeId')
   async updateEmployeeInfo(
     @Param('corporateId') paramCorporateId: string,
     @Param('branchId') paramBranchId: string,
@@ -141,7 +146,7 @@ export class CorporateController {
 
   @Roles(UserRoles.superAdmin, UserRoles.corporate)
   @UseGuards(JwtAuthGuard)
-  @Put(':corporateId/corporateinfo/:corporateId')
+  @Put(':corporateId/corporateinfo')
   async updateCorporate(
     @Param('corporateId') paramCorporateId: string,
     @Body() body: UpdateCorporateDto,
@@ -156,7 +161,7 @@ export class CorporateController {
 
   @Roles(UserRoles.superAdmin, UserRoles.corporate)
   @UseGuards(JwtAuthGuard)
-  @Get(':corporateId/:branchId/branches')
+  @Get(':corporateId/branches')
   async getAllBranches(
     @Param('corporateId') paramCorporateId: string,
     @Request() request: any,
@@ -166,10 +171,10 @@ export class CorporateController {
 
   @Roles(UserRoles.superAdmin, UserRoles.corporate)
   @UseGuards(JwtAuthGuard)
-  @Post(':corporateId/:branchId/branches')
+  @Post(':corporateId/branches')
   async addBranch(
-    @Body() body: AddBranchDto,
     @Param('corporateId') paramCorporateId: string,
+    @Body() body: AddBranchDto,
     @Request() request: any,
   ): Promise<any> {
     return this.corporateService.addBranch(
@@ -181,7 +186,7 @@ export class CorporateController {
 
   @Roles(UserRoles.superAdmin, UserRoles.corporate)
   @UseGuards(JwtAuthGuard)
-  @Get(':corporateId/:branchId/branches/branchesinfo/:branchId')
+  @Get(':corporateId/:branchId/branches/:branchId')
   async getCorporateBranchInfo(
     @Param('corporateId') paramCorporateId: string,
     @Param('branchId') paramBranchId: string,
@@ -196,7 +201,7 @@ export class CorporateController {
 
   @Roles(UserRoles.superAdmin, UserRoles.corporate)
   @UseGuards(JwtAuthGuard)
-  @Put(':corporateId/:branchId/branches/branchesinfo/:branchId')
+  @Put(':corporateId/:branchId/branches/:branchId')
   async updateCorporateBranch(
     @Param('corporateId') paramCorporateId: string,
     @Param('branchId') paramBranchId: string,
@@ -207,6 +212,89 @@ export class CorporateController {
       paramCorporateId,
       paramBranchId,
       body,
+      request.user,
+    );
+  }
+
+  @Roles(UserRoles.superAdmin, UserRoles.corporate)
+  @UseGuards(JwtAuthGuard)
+  @Get(':corporateId/:branchId/schedule')
+  async getDailyBookingCorporateBranch(
+    @Param('corporateId') paramCorporateId: string,
+    @Param('branchId') paramBranchId: string,
+    @Query('day') day: string,
+    @Query('month') month: string,
+    @Query('year') year: string,
+    @Request() request: any,
+  ): Promise<any> {
+    return this.bookingService.getDailyBookingCorporateBranch(
+      paramCorporateId,
+      paramBranchId,
+      day,
+      month,
+      year,
+      request.user,
+    );
+  }
+
+  @Roles(UserRoles.superAdmin, UserRoles.corporate)
+  @UseGuards(JwtAuthGuard)
+  @Post(':corporateId/:branchId/schedule')
+  async setDailySchedule(
+    @Param('corporateId') paramCorporateId: string,
+    @Param('branchId') paramBranchId: string,
+    @Body() body: SetDailyScheduleDto,
+    @Request() request: any,
+  ): Promise<any> {
+    return this.bookingService.setDailySchedule(
+      paramCorporateId,
+      paramBranchId,
+      body,
+      request.user,
+    );
+  }
+
+  @Roles(UserRoles.superAdmin, UserRoles.corporate)
+  @UseGuards(JwtAuthGuard)
+  @Put(':corporateId/:branchId/schedule/:scheduleId')
+  async assignTechnicianToDailySchedule(
+    @Param('corporateId') paramCorporateId: string,
+    @Param('branchId') paramBranchId: string,
+    @Param('scheduleId') paramScheduleId: string,
+    @Body() body: AssignTechnicianToDailyScheduleDto,
+    @Request() request: any,
+  ): Promise<any> {
+    return this.bookingService.assignTechnicianToDailySchedule(
+      paramCorporateId,
+      paramBranchId,
+      paramScheduleId,
+      body,
+      request.user,
+    );
+  }
+
+  @Roles(UserRoles.superAdmin, UserRoles.corporate)
+  @UseGuards(JwtAuthGuard)
+  @Put(':corporateId/:branchId/schedule/:scheduleSlotsId/inProgress')
+  async updateBookingToInProgress(
+    @Param('scheduleSlotsId') paramScheduleSlotsId: string,
+    @Request() request: any,
+  ): Promise<any> {
+    return this.bookingService.updateBookingToInProgress(
+      paramScheduleSlotsId,
+      request.user,
+    );
+  }
+
+  @Roles(UserRoles.superAdmin, UserRoles.corporate)
+  @UseGuards(JwtAuthGuard)
+  @Put(':corporateId/:branchId/schedule/:scheduleSlotsId/completed')
+  async updateBookingToCompleted(
+    @Param('scheduleSlotsId') paramScheduleSlotsId: string,
+    @Request() request: any,
+  ): Promise<any> {
+    return this.bookingService.updateBookingToCompleted(
+      paramScheduleSlotsId,
       request.user,
     );
   }

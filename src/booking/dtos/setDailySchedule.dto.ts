@@ -5,6 +5,8 @@ class SlotsProperties
 {
     uuid: string;
 
+    status: string;
+
     @IsNotEmpty()
     @IsNumber()
     startTimeHour: number;
@@ -30,14 +32,8 @@ export class SetDailyScheduleDto
 {
     uuid: string;
 
-    status: string;
-
-    @IsUUID()
-    @IsNotEmpty()
     corporateUuid: string;
 
-    @IsUUID()
-    @IsNotEmpty()
     branchUuid: string;
 
     date: Date;
