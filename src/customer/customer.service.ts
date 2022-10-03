@@ -181,6 +181,9 @@ export class CustomerService {
     });
     if (!verifyUser) throw new BadRequestException('User is not authorized');
 
+    console.log(paramVehicleId);
+    console.log('yes');
+
     const deleteVehicle = await this.vehicleModel.findOneAndUpdate(
       { ownerUuid: request.userId },
       { $pull: { information: { uuid: paramVehicleId } } },

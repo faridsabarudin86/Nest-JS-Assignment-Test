@@ -107,7 +107,7 @@ export class CustomerController {
 
   @UseGuards(JwtAuthGuard)
   @Roles(UserRoles.customer)
-  @Put('vehicles/:vehicleId')
+  @Delete('vehicles/:vehicleId')
   async removeVehicle(
     @Param('vehicleId') paramVehicleId: string,
     @Request() request: any,

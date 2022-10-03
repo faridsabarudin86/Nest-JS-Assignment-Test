@@ -363,7 +363,23 @@ export class CorporateService {
     if (!verifyUser) throw new BadRequestException('User is not authorized');
 
     body.uuid = uuid();
+    body.corporateUuid = paramCorporateId;
     body.branchUuid = uuid();
+
+    let startWorkingHours = new Date();
+    startWorkingHours.setUTCHours(
+      body.startWorkingHours_Hours,
+      body.startWorkingHours_Minutes,
+    );
+
+    let endWorkingHours = new Date();
+    endWorkingHours.setUTCHours(
+      body.endWorkingHours_Hours,
+      body.endWorkingHours_Minutes,
+    );
+
+    body.startWorkingHours = startWorkingHours;
+    body.endWorkingHours = endWorkingHours;
 
     const newCorporateBranch = new this.corporateBranchModel(body);
     return await newCorporateBranch.save();

@@ -229,7 +229,7 @@ export class BookingService {
       );
       if (!findSchedule) throw new BadRequestException('No schedule found');
 
-      return await findSchedule.save();
+      findSchedule.save();
     }
   }
 

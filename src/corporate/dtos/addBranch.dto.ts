@@ -5,6 +5,8 @@ export class AddBranchDto
 {
     uuid: string;
 
+    corporateUuid: string;
+
     branchUuid: string;
 
     @IsNotEmpty()
@@ -19,13 +21,25 @@ export class AddBranchDto
     @IsString()
     branchAddress: string;
 
-    @IsNotEmpty()
-    @IsNumber()
-    startWorkingHours: number;
+    startWorkingHours: Date;
+
+    endWorkingHours: Date;
 
     @IsNotEmpty()
     @IsNumber()
-    endWorkingHours: number;
+    startWorkingHours_Hours: number;
+
+    @IsNotEmpty()
+    @IsNumber()
+    startWorkingHours_Minutes: number;
+
+    @IsNotEmpty()
+    @IsNumber()
+    endWorkingHours_Hours: number;
+
+    @IsNotEmpty()
+    @IsNumber()
+    endWorkingHours_Minutes: number;
 
     @IsNotEmpty()
     @IsArray()
