@@ -1,0 +1,94 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "eSupport APIs",
+    "description": "These API helps to get the required information in eSupport",
+    "contact": {
+      "name": "Rishi Raj",
+      "email": "rishi_r@dell.com"
+    },
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://onlineservices.ausvdc02.pcf.dell.com"
+    }
+  ],
+  "paths": {
+    "/Online/orderstatus/{order}": {
+      "get": {
+        "description": "Obtain current Order Status when searched with Order number",
+        "parameters": [
+          {
+            "name": "order",
+            "in": "path",
+            "description": "Enter the Order number",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "example": 120202964
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Order Number found successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "120202964 has been Confirmed"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Order Number doesn't exist",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string",
+                  "example": "Order number 120202964 is not found"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/Online/DriverDetails/{productname}": {
+      "get": {
+        "description": "Obtain driver details when searched with product name",
+        "parameters": [
+          {
+            "name": "productname",
+            "in": "path",
+            "description": "Enter the product name",
+            "required": true,
+            "style": "simple",
+            "explode": false,
+            "schema": {
+              "type": "string",
+              "example": "latitude-14-3480-laptop"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Drivers details found successfully",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {}
+}
